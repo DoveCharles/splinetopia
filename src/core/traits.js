@@ -65,7 +65,7 @@ export const TRAITS = {
   smoker: {base: 1, min: 0, max: 20}, //desire to smoke normal
   painkillers: {base: 1, min: 0, max: 20}, //desire for drugs that take the edge off
   nerd: {base: 1, min: 0, max: 20}, //chance to bring up deep stuff & trivia
-  conservative: {base: 0, min: -1, max: 1} //communist to fascist, -1 left, 1 right
+  conservative: {base: 0, min: -1, max: 1, combine: 'add'} //communist to fascist, -1 left, 1 right
 };
 
 // Shorthands: a trait named here counts as if the traits listed were written beside it, at the same amounts and stacking

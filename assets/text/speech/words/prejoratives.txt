@@ -32,23 +32,23 @@ do-gooder {evil, other.evil = -1}
 loser {evil = -1}
 party pooper {stimulants, other.stimulants = -1}
 downer {stimulants, other.stimulants = -1}
-baba yaga {age = -1, other.age > 0}
-biddy | biddies {age = -1, other.age > 0}
-boomer {age = -1, other.age > 0}
-coot {age = -1, other.age > 0}
-curmudgeon {age = -1, other.age > 0, nerd}
-dinosaur {age = -1, other.age > 0}
-fossil {age = -1, other.age > 0}
-old bag {age = -1, other.age > 0}
-little baby | little babies {other.age < 0}
-brat {age, other.age = -1}
-hipster {age, other.age = -1}
-man-child {other.age > 0}
-whippersnapper {age > 0, other.age <0}
-zoomer {other.age <0}
+baba yaga {agemult = -1, other.agemult > 0}
+biddy | biddies {agemult = -1, other.agemult > 0}
+boomer {agemult = -1, other.agemult > 0}
+coot {agemult = -1, other.agemult > 0}
+curmudgeon {agemult = -1, other.agemult > 0, nerd}
+dinosaur {agemult = -1, other.agemult > 0}
+fossil {agemult = -1, other.agemult > 0}
+old bag {agemult = -1, other.agemult > 0}
+little baby | little babies {other.agemult < 0}
+brat {agemult, other.agemult = -1}
+hipster {agemult, other.agemult = -1}
+man-child {other.agemult > 0}
+whippersnapper {agemult > 0, other.agemult <0}
+zoomer {other.agemult <0}
 addict {conservative = -1, other.stimulants, other.alcoholic, other.psychs, other.painkillers}
 drunkard {other.alcoholic}
-boring fuck {other.alcholic = -1, other.stimulants = -1}
+boring fuck {other.alcoholic = -1, other.stimulants = -1}
 stoner {other.stoner}
 cretin {nerd, conservative}
 derp
@@ -66,7 +66,7 @@ libtard {evil, conservative}
 chud {other.conservative}
 cuck {conservative}
 bourgeios {nerd, conservative = -1}
-lumpenproletariat {nerd, conservative = -1}
+lumpen {nerd, conservative = -1}
 liberal {conservative}
 commie {conservative, other.conservative = -1}
 fascist {other.conservative}

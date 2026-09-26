@@ -1,4 +1,4 @@
-Smith [choiceweight = 5]
+Smith {choiceweight = 5}
 Rydelek
 Key
 Wallace
@@ -21,7 +21,7 @@ Burke
 Wood
 Hollandaise
 Woods
-Jones [choiceweight = 3]
+Jones {choiceweight = 3}
 Brown
 Irwin
 of All Time
@@ -179,7 +179,7 @@ Jumper
 English
 Stronghold
 Donuts
-The Bounty Hunter [aggression = 10]
+The Bounty Hunter {aggression = 10}
 Manson
 Truman
 Briggs
@@ -197,7 +197,7 @@ Jeffries
 Hawk
 Oral
 Lenin
-Marauder [bloodlust]
+Marauder {bloodlust}
 Schema
 Nipples
 Sayed

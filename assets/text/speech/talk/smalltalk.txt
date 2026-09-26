@@ -105,8 +105,8 @@ What do you do for fun?
 > Mostly [badhabits: ing]. {evil}
 
 Do you like [hobbies#1]?
-> I love [hobbies#1]! {happy}
-> Ugh, [hobbies#1]. {mood = -1}
+> I love [hobbies#1]! {likes #1}
+> Ugh, [hobbies#1]. {likes #1 = -1}
 >> Fair enough.
 
 I could really go for some [tastes] right now.
@@ -118,3 +118,36 @@ Good morning! {world.hour 6-11}
 > Maybe for you but my whole family just died so... {mood = -1, is != happy}
 >> Aw, shucks!
 >> ...and it gets even better! {evil}
+I really love [topics].
+> Me too! {likes}
+> Same, honestly. {likes, chatty}
+> That's awful. {likes = -1}
+>> Each to their own. {patience}
+> You would. {likes = -1, aggression}
+Honestly? I can't stand [topics: hated].
+> Ugh, same. {likes < 0}
+> What's wrong with it? {likes > 0}
+>> Everything. {aggression}
+What's your favourite thing in the world?
+> [me.loves#1]. {chatty}
+>> Really? [me.loves#1]? {likes #1 < 0}
+>> Oh, me too! {likes #1 > 0}
+>> Actually, I love [me.loves] more. {likes #1 = -0.5}
+> I don't know... I suppose [me.loves].
+What do you hate most?
+> [me.hates], easily.
+>> Same. {likes < 0}
+>> Actually, I hate [me.hates] more.
+>> What? I love it! {likes > 0.5}
+You love [other.loves], don't you? {nosy}
+> How did you know? {happy}
+> Doesn't everyone? {chatty}
+We both love [both.loves#1], don't we? {chatty}
+> [both.loves#1]? Always. {happy}
+> Who doesn't?
+At least we agree [both.hates] is awful. {weight = 0.5}
+> Too right. {aggression}
+How can you hate [both.clash#1]? {weight = 0.5}
+> [both.clash#1] is disgusting. {aggression}
+>> Take that back! {aggression, end = bad}
+> Each to their own. {patience}

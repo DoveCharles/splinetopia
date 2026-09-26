@@ -1,6 +1,7 @@
 // ============================================================ entries with traits
 // The shared reader for lines in the .txt files that describe things (people/*.txt, cars.txt, ...). A line is an entry: its
-// text, then optional [brackets] holding traits (`speed = 2`, `solo`), rules (`limit = 1a`) and `choiceweight = n`.
+// text, then optional {brackets} holding traits (`speed = 2`, `solo`), rules (`limit = 1a`) and `choiceweight = n`, and
+// <categories> it's also said as (see speech/about.txt). `Card text | spoken text` gives it a second wording for speech.
 // Every kind shares the trait table in core/traits.js.
 import { TRAITS, TRAIT_MACROS, modifierLines } from './traits.js';
 
@@ -16,14 +17,17 @@ const RULES = ['limit'];
 // Every trait at its starting value.
 export const startingTraits = (table = TRAITS) => Object.fromEntries(Object.entries(table).map(([key, trait]) => [key, trait.base]));
 
-// An entry from one line: { text, traits: [[name, value]], rules: [[name, value]], weight }. A trait without a value is 1.
-// `file` names the file in warnings.
+// An entry from one line: { text, said, traits: [[name, value]], rules: [[name, value]], weight, categories }. `said` is
+// the wording after a `|` (null without one). A trait without a value is 1. `file` names the file in warnings.
+const TRAILING = /(?:\{([^{}]*)\}|<([a-z0-9_,\s]*)>)\s*$/i;
 export function entryOf(line, { traits: table = TRAITS, file }) {
   const traits = [];
   const rules = [];
+  const categories = [];
   let text = line, group, weight = 1;
-  while ((group = text.match(/\[([^[\]]*)\]\s*$/))) {
+  while ((group = text.match(TRAILING))) {
     text = text.slice(0, group.index).trimEnd();
+    if (group[2] != null) { categories.unshift(...group[2].split(',').map(name => name.trim().toLowerCase()).filter(Boolean)); continue; }
     const found = [];
     const foundRules = [];
     const splitParts = list => list.split(/[,;]/).filter(part => part.trim());
@@ -48,10 +52,12 @@ export function entryOf(line, { traits: table = TRAITS, file }) {
     traits.unshift(...found);
     rules.unshift(...foundRules);
   }
-  return { text, traits, weight, rules };
+  const bar = text.indexOf('|'), said = bar < 0 ? null : text.slice(bar + 1).trim() || null;
+  if (bar >= 0) text = text.slice(0, bar).trim();
+  return { text, said, traits, weight, rules, categories };
 }
 // An entry with no traits, for placeholder text.
-export const plainEntry = text => ({ text, traits: [], weight: 1, rules: [] });
+export const plainEntry = text => ({ text, said: null, traits: [], weight: 1, rules: [], categories: [] });
 // An entry repeated `weight` times (so a random pick favours it); none if the weight is 0.
 export const weighted = entry => Array.from({ length: entry.weight }, () => entry);
 
@@ -64,7 +70,7 @@ export const weighted = entry => Array.from({ length: entry.weight }, () => entr
 // names the ones that are card text. With neither given, every line in a section is an entry.
 //
 // A section's lines are `attribute = value`, and it's the value that's the entry, so `name = Train` gives the text
-// "Train" (and `loves = Shoooom [choiceweight = 2]` carries that weight). Lines with no `=` are entries whole — the lists
+// "Train" (and `loves = Shoooom {choiceweight = 2}` carries that weight). Lines with no `=` are entries whole — the lists
 // in people's files, which have no attributes to name.
 //
 // Returns { sections, starts: { trait: value }, distribution: [[count…, weight]] or null }, where a section is an object
@@ -73,16 +79,16 @@ export const weighted = entry => Array.from({ length: entry.weight }, () => entr
 // kept beside them as the text they were written as. A file that writes lines with no `=` at all — the people/*.txt lists —
 // has them all under the heading's own name instead: `sections['boy names']`.
 // A setting like `enterable = yes`, or an attribute line, split into its key and everything after the `=`. Null when the
-// line isn't one: `Alfie [agemult = 0.8]` and `😀 [mood = 0.6]` are whole entries carrying a trait, and the `=` in their
+// line isn't one: `Alfie {agemult = 0.8}` and `😀 {mood = 0.6}` are whole entries carrying a trait, and the `=` in their
 // brackets mustn't make them look like attributes.
 function pairOf(line) {
   const match = line.match(/^([a-z][a-z0-9]*)\s*=\s*(.*)$/i);
   if (!match) return null;
   const rest = match[2];
   // only bails when a second `=` sits before the trailing bracket (rest itself reads like "key = value [...]"); a bracket
-  // with no `=` at all — a valueless trait such as [legendary] or [keysmash] — must not trip this, or the line's entry
+  // with no `=` at all — a valueless trait such as {legendary} or {keysmash} — must not trip this, or the line's entry
   // ends up filed under the wrong attribute and vanishes from its list (see core/type-text.js's `of`)
-  if (rest.endsWith(']') && rest.indexOf('=') !== -1 && rest.lastIndexOf('[') > rest.indexOf('=')) return null;
+  if (rest.endsWith('}') && rest.indexOf('=') !== -1 && rest.lastIndexOf('{') > rest.indexOf('=')) return null;
   return { key: match[1].toLowerCase(), value: rest };
 }
 
@@ -114,7 +120,7 @@ export function parseSections(text, { traits: table = TRAITS, file, attributes =
       return;
     }
     const pair = pairOf(line), pairKey = pair && pair.key;
-    // an attribute line is an entry in its value alone, so `name = Train` and `loves = Shoooom [choiceweight = 2]` read
+    // an attribute line is an entry in its value alone, so `name = Train` and `loves = Shoooom {choiceweight = 2}` read
     // as "Train" and "Shoooom" with that trait; a line with no `=` (the people/*.txt lists) is the whole entry
     const entry = entryOf(pair ? pair.value : line, { traits: table, file });
     if (!entry.text) return;

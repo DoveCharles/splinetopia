@@ -502,7 +502,9 @@ export function refreshTraits(p, i) {
   p.height = p.baseHeight*p.traits.size;
   p.age = profile.age;
   p.name = profile.name; // (for their card, and for naming them in the morality notices when they die)
-  p.loves = profile.loves; p.hates = profile.hates; // (for what they say: see life/speech-text.js)
+  p.loves = profile.lovesSaid; p.hates = profile.hatesSaid; // (for what they say: see life/speech-text.js)
+  p.lovedWords = profile.lovedWords; p.hatedWords = profile.hatedWords;
+  p.isMan = isMan; // (null for the cuboid people; for {man} in what they say)
 }
 
 export const FRIGHT_RADIUS = 14, FLEE_SPEED = 2.3;

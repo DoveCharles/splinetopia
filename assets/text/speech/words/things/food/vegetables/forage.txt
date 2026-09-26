@@ -2,8 +2,8 @@ forms: singular | plural | general
 alexander's | alexander's
 angelica | angelica
 crab apple
-[ediblemushrooms] {weight: 4}
-[medicinalherbs] {weight: 4}
+[ediblemushrooms] {weight = 4}
+[medicinalherbs] {weight = 4 }
 rosehip
 nettle
 wild garlic | wild garlic

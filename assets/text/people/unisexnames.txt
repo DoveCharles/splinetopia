@@ -1,8 +1,8 @@
 Mealworm
 Charlie
-Sock [agemult = 0.5]
+Sock {agemult = 0.5}
 Cameron
-(UNKNOWN) [choiceweight = 6]
+(UNKNOWN) {choiceweight = 6}
 Max
 Angel
 DJ

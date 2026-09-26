@@ -7,7 +7,7 @@ import { DEFAULT_COUNTS, parseSections, entryOf, plainEntry, weighted, combineTr
 // they're all read here: a [section] per kind, with `attribute = value` lines under it, any of which can be given several
 // times to have each thing of that kind pick one. A kind falls back along a chain — itself, then whatever `fallbacks`
 // says it belongs to, then [default] — so a section need only say what it does differently.
-// Attribute values are entries (see core/entries.js): they can carry [traits], `limit` rules and `choiceweight`.
+// Attribute values are entries (see core/entries.js): they can carry {traits}, `limit` rules and `choiceweight`.
 //
 // `attributes` are the row keys the file fills in (see TEXT_ROWS), `settings` any lines that aren't card text (buildings'
 // `enterable`), and `placeholder` what to use until the file has loaded, or if it can't be. Any trait in core/traits.js

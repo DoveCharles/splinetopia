@@ -1,4 +1,4 @@
-# Swear words (see about.txt). Called as [swears].
+# Swear words (see about.txt).
 forms: singular | plural
 fuck | fucks
 shit | -

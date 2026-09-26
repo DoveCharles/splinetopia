@@ -1,68 +1,68 @@
-😀 [mood = 0.6, happy = 0.6, aggression = 0.5]
-😄 [mood = 0.8, happy = 0.8, aggression = 0.5]
-😁 [mood = 0.8, happy = 1, aggression = 0.5]
-😆 [mood = 0.7, happy = 1, fidgety = 2, aggression = 0.5]
-😅 [mood = 0.3, happy = 0.5, shock = 0.3, fidgety = 2, aggression = 0.5]
-😂 [mood = 1, happy = 1, aggression = 0.5]
-🙂 [mood = 0.3, happy = 0.3, aggression = 0.5]
-🙃 [happy = 0.3]
-😉 [mood = 0.4, happy = 0.5, chatty = 1.5, aggression = 0.5]
-😊 [mood = 0.6, happy = 0.8, aggression = 0.5]
-😇 [mood = 0.5, happy = 0.6, patience = 2, aggression = 0]
-🥰 [mood = 0.8, happy = 0.9, chatty = 2, aggression = 0.5]
-😍 [mood = 0.8, happy = 0.7, shock = 0.3, nosy = 2, aggression = 0.5]
-🤩 [mood = 1, happy = 0.8, shock = 0.5, nosy = 3, aggression = 0.5]
-😋 [mood = 0.5, happy = 0.6, aggression = 0.5]
-😜 [mood = 0.5, happy = 0.6, fidgety = 3, aggression = 0.5]
-🤪 [happy = 0.5, shock = 0.4, fidgety = 4, nosy = 3]
-😎 [speed = 0.85, blinks = 0.3]
-🤓 [talkative = 3]
-🧐 [angry = 0.2, nosy = 3, blinks = 0.5]
-😏 [mood = 0.2, happy = 0.2, angry = 0.2]
+😀 {mood = 0.6, happy = 0.6, aggression = 0.5}
+😄 {mood = 0.8, happy = 0.8, aggression = 0.5}
+😁 {mood = 0.8, happy = 1, aggression = 0.5}
+😆 {mood = 0.7, happy = 1, fidgety = 2, aggression = 0.5}
+😅 {mood = 0.3, happy = 0.5, shock = 0.3, fidgety = 2, aggression = 0.5}
+😂 {mood = 1, happy = 1, aggression = 0.5}
+🙂 {mood = 0.3, happy = 0.3, aggression = 0.5}
+🙃 {happy = 0.3}
+😉 {mood = 0.4, happy = 0.5, chatty = 1.5, aggression = 0.5}
+😊 {mood = 0.6, happy = 0.8, aggression = 0.5}
+😇 {mood = 0.5, happy = 0.6, patience = 2, aggression = 0}
+🥰 {mood = 0.8, happy = 0.9, chatty = 2, aggression = 0.5}
+😍 {mood = 0.8, happy = 0.7, shock = 0.3, nosy = 2, aggression = 0.5}
+🤩 {mood = 1, happy = 0.8, shock = 0.5, nosy = 3, aggression = 0.5}
+😋 {mood = 0.5, happy = 0.6, aggression = 0.5}
+😜 {mood = 0.5, happy = 0.6, fidgety = 3, aggression = 0.5}
+🤪 {happy = 0.5, shock = 0.4, fidgety = 4, nosy = 3}
+😎 {speed = 0.85, blinks = 0.3}
+🤓 {talkative = 3}
+🧐 {angry = 0.2, nosy = 3, blinks = 0.5}
+😏 {mood = 0.2, happy = 0.2, angry = 0.2}
 😐
-😑 [sad = 0.3, blinks = 0.3]
-😶 [talkative = 0.1]
-🙄 [mood = -0.3, angry = 0.3, nosy = 2]
-😬 [mood = -0.2, shock = 0.4, fidgety = 2]
-😴 [sad = 0.6, lounging = 3, blinks = 4, speed = 0.8]
-🤤 [sad = 0.4, lounging = 2]
-😌 [mood = 0.3, happy = 0.5, patience = 2]
-😔 [mood = -0.5, sad = 0.8, speed = 0.8]
-🙁 [mood = -0.5, sad = 0.6]
-😮 [shock = 0.7, nosy = 2]
-😳 [shock = 0.8, blinks = 3]
-🥺 [mood = -0.3, sad = 0.7]
-😢 [mood = -0.8, sad = 0.9, speed = 0.8]
-😭 [mood = -1, sad = 1, speed = 0.7]
-😤 [mood = -0.6, angry = 0.9, speed = 1.4]
-😠 [mood = -0.8, angry = 1, chatty = 0.3, aggression = 10]
-🤯 [shock = 1, fidgety = 4]
-😱 [shock = 1, speed = 1.8, blinks = 0]
-🥳 [mood = 0.8, happy = 1, chatty = 3, aggression = 0.5]
-🤠 [mood = 0.5, happy = 0.5, speed = 0.9]
-🥴 [sad = 0.4, speed = 0.6]
-🤔 [angry = 0.2, fidgety = 3, patience = 1.5]
-🫠 [happy = 0.3, sad = 0.5, lounging = 3, speed = 0.7]
-🤗 [mood = 0.6, happy = 0.9, chatty = 3]
-🤢 [mood = -0.6, patience = 0.2, speed = 0.4, chatty = 0.3, nosy = 0.4]
-🧌 [parks = 8, chatty = 0.3]
-🥳 [mood = 1, chatty = 4, nosy = 2]
-😷 [mood = -0.3, chatty = 0.1]
-🤐 [chatty = 0, talkative = 0]
-🥷 [speed = 0.7, chatty = 0, aggression = 20, dodge = 0.5]
-👩‍🎨 [plazas = 4, parks = 3, lounging = 3, patience = 4]
-🎵 [mood = 0.3, fidgety = 3, chatty = 0.3]
-🕵️ [nosy = 10 , chatty = 10, talkative = 0.3]
-🧘 [patience = 4, lounging = 4, parks = 4, aggression = 0]
-🧟 [speed = 0.3, talkative = 0.05, aggression = 10]
-🤡 [chatty = 3, talkative = 3, aggression = 2]
-🥶 [speed = 0.5, mood = -0.3]
-🏃🏻‍➡️ [speed = 2, chatty = 0.2, lounging = 0]
-📃 [choiceweight = 0, speed = 0.6, blinks = 0.3, fidgety = 12, evil = 0.1, shock = 0.7, happy = 0.5, aggression = 0.3]
-🌵 [choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 1, happy = 0., aggression = 0]
-🍄 [choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 0.7, happy = 0.2, aggression = 0.5]
-🐸 [choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 1, sad = 0.2, aggression = 0]
-💊 [choiceweight = 0, speed = 3, chatty = 6, talkative = 6, patience = 0.4, blinks = 5, mood = 0.5, nosy = 6, fidgety = 12, lounging = 0, evil = 0.05, happy = 0.9, aggression = 10]
-🌿 [choiceweight = 0, speed = 0.5, blinks = 0.6, chatty = 4, shock = 0.5, aggression = 0.3]
-💨 [choiceweight = 0, speed = 0.3, chatty = 0.3, patience = 10, lounging = 10, blinks = 0.2, happy = 1, aggression = 0]
-🍺 [choiceweight = 0, speed = 0.8, chatty = 3, fidgety = 3, happy = 0.5, sad = 0.5, aggression = 5]
+😑 {sad = 0.3, blinks = 0.3}
+😶 {talkative = 0.1}
+🙄 {mood = -0.3, angry = 0.3, nosy = 2}
+😬 {mood = -0.2, shock = 0.4, fidgety = 2}
+😴 {sad = 0.6, lounging = 3, blinks = 4, speed = 0.8}
+🤤 {sad = 0.4, lounging = 2}
+😌 {mood = 0.3, happy = 0.5, patience = 2}
+😔 {mood = -0.5, sad = 0.8, speed = 0.8}
+🙁 {mood = -0.5, sad = 0.6}
+😮 {shock = 0.7, nosy = 2}
+😳 {shock = 0.8, blinks = 3}
+🥺 {mood = -0.3, sad = 0.7}
+😢 {mood = -0.8, sad = 0.9, speed = 0.8}
+😭 {mood = -1, sad = 1, speed = 0.7}
+😤 {mood = -0.6, angry = 0.9, speed = 1.4}
+😠 {mood = -0.8, angry = 1, chatty = 0.3, aggression = 10}
+🤯 {shock = 1, fidgety = 4}
+😱 {shock = 1, speed = 1.8, blinks = 0}
+🥳 {mood = 0.8, happy = 1, chatty = 3, aggression = 0.5}
+🤠 {mood = 0.5, happy = 0.5, speed = 0.9}
+🥴 {sad = 0.4, speed = 0.6}
+🤔 {angry = 0.2, fidgety = 3, patience = 1.5}
+🫠 {happy = 0.3, sad = 0.5, lounging = 3, speed = 0.7}
+🤗 {mood = 0.6, happy = 0.9, chatty = 3}
+🤢 {mood = -0.6, patience = 0.2, speed = 0.4, chatty = 0.3, nosy = 0.4}
+🧌 {parks = 8, chatty = 0.3}
+🥳 {mood = 1, chatty = 4, nosy = 2}
+😷 {mood = -0.3, chatty = 0.1}
+🤐 {chatty = 0, talkative = 0}
+🥷 {speed = 0.7, chatty = 0, aggression = 20, dodge = 0.5}
+👩‍🎨 {plazas = 4, parks = 3, lounging = 3, patience = 4}
+🎵 {mood = 0.3, fidgety = 3, chatty = 0.3}
+🕵️ {nosy = 10 , chatty = 10, talkative = 0.3}
+🧘 {patience = 4, lounging = 4, parks = 4, aggression = 0}
+🧟 {speed = 0.3, talkative = 0.05, aggression = 10}
+🤡 {chatty = 3, talkative = 3, aggression = 2}
+🥶 {speed = 0.5, mood = -0.3}
+🏃🏻‍➡️ {speed = 2, chatty = 0.2, lounging = 0}
+📃 {choiceweight = 0, speed = 0.6, blinks = 0.3, fidgety = 12, evil = 0.1, shock = 0.7, happy = 0.5, aggression = 0.3}
+🌵 {choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 1, happy = 0., aggression = 0}
+🍄 {choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 0.7, happy = 0.2, aggression = 0.5}
+🐸 {choiceweight = 0, speed = 0.3, blinks = 0.1, parks = 6, fidgety = 0.6, shock = 1, sad = 0.2, aggression = 0}
+💊 {choiceweight = 0, speed = 3, chatty = 6, talkative = 6, patience = 0.4, blinks = 5, mood = 0.5, nosy = 6, fidgety = 12, lounging = 0, evil = 0.05, happy = 0.9, aggression = 10}
+🌿 {choiceweight = 0, speed = 0.5, blinks = 0.6, chatty = 4, shock = 0.5, aggression = 0.3}
+💨 {choiceweight = 0, speed = 0.3, chatty = 0.3, patience = 10, lounging = 10, blinks = 0.2, happy = 1, aggression = 0}
+🍺 {choiceweight = 0, speed = 0.8, chatty = 3, fidgety = 3, happy = 0.5, sad = 0.5, aggression = 5}

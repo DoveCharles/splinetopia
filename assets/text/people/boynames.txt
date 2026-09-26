@@ -10,10 +10,10 @@ Arthur
 Oscar
 Theo
 Freddie
-Alfie [agemult = 0.8]
+Alfie {agemult = 0.8}
 Henry
 Archie
-Finn [agemult = 0.8]
+Finn {agemult = 0.8}
 Hugo
 Ezra
 Milo 
@@ -49,8 +49,8 @@ Gary
 Terry
 Keith
 Dave
-Hieronymous [agemult = 1.3]
-Jeeves [agemult = 1.05]
+Hieronymous {agemult = 1.3}
+Jeeves {agemult = 1.05}
 Johnny
 Markus
 Matthew
@@ -60,20 +60,20 @@ Lyle
 Paulie
 Chase
 Ryder
-Friedrich [agemult = 1.05]
+Friedrich {agemult = 1.05}
 Michel
 Jean
-Bartholomew [agemult = 1.05]
+Bartholomew {agemult = 1.05}
 Jacques
 Cecil
 Adonis
-Homer [agemult = 1.05]
+Homer {agemult = 1.05}
 Ralph
 Germaine
 Albert
 Bruce
-Pee-wee [agemult = 1.05]
-Vladimir [agemult = 1.05]
+Pee-wee {agemult = 1.05}
+Vladimir {agemult = 1.05}
 Nathan
 Lorenzo
 Timmy
@@ -91,24 +91,24 @@ Woody
 Roy
 Wyatt
 Lewis
-Don [agemult = 1.05]
-Sancho [agemult = 1.05]
+Don {agemult = 1.05}
+Sancho {agemult = 1.05}
 Jeremy
-Gargamel [agemult = 1.05]
-Seigwald [agemult = 1.05]
+Gargamel {agemult = 1.05}
+Seigwald {agemult = 1.05}
 Shaggy
 Isaac
 Steve
 Roald
-Horace [agemult = 1.05]
+Horace {agemult = 1.05}
 Bruiser
 Brick
-Cletus [agemult = 1.05]
-Herbert [agemult = 1.05]
-Cornelius [agemult = 1.05]
-Archibald [agemult = 1.05]
-Elmer [agemult = 1.05]
-Pope [agemult = 1.3]
+Cletus {agemult = 1.05}
+Herbert {agemult = 1.05}
+Cornelius {agemult = 1.05}
+Archibald {agemult = 1.05}
+Elmer {agemult = 1.05}
+Pope {agemult = 1.3}
 Boy
 Dick
 Jock
@@ -172,15 +172,15 @@ Bong Soo
 Chiu
 Ulysses
 Telemachus
-Mr. [choiceweight = 6]
+Mr. {choiceweight = 6}
 Chet
 Obama
 Colonel
-Daddy [agemult = 1.1]
-Dada [agemult = 1.1]
-Granda [agemult = 1.3]
-Poppa [agemult = 1.3]
-Uncle [agemult = 1.2]
+Daddy {agemult = 1.1}
+Dada {agemult = 1.1}
+Granda {agemult = 1.3}
+Poppa {agemult = 1.3}
+Uncle {agemult = 1.2}
 Pádraig
 Ulfric
 Art
@@ -216,13 +216,13 @@ Delimiter
 Demeter
 Finrod
 Gimli
-Doc [size = 0.8]
-Grumpy [size = 0.8,  angry = 0.4, mood = -0.1]
-Happy [size = 0.8,   mood = 0.2]
-Sneezy [size = 0.8]
-Bashful [size = 0.8]
-Sleepy [size = 0.8, lounging = 10]
-Dopey [size = 0.8]
+Doc {size = 0.8}
+Grumpy {size = 0.8,  angry = 0.4, mood = -0.1}
+Happy {size = 0.8,   mood = 0.2}
+Sneezy {size = 0.8}
+Bashful {size = 0.8}
+Sleepy {size = 0.8, lounging = 10}
+Dopey {size = 0.8}
 Radagast
 Thorin
 Morgoth

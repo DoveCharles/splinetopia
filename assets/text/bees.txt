@@ -26,17 +26,17 @@ mood = 😤
 mood = 🥱
 loves = Clover
 loves = Lavender
-loves = Telling the others about it [speed = 2]
-loves = Being drunk [speed = 0.7]
+loves = Telling the others about it {speed = 2}
+loves = Being drunk {speed = 0.7}
 loves = Patriotism
-loves = Suger water.... need.... sugar water [speed = 0.4]
+loves = Suger water.... need.... sugar water {speed = 0.4}
 loves = Drowning in bottles of Corona 
-loves = Smoking [speed = 0.4]
+loves = Smoking {speed = 0.4}
 loves = Papier-mâché
 loves = Flower nap
 loves = Beyoncé
-loves = Protecting the hive [size = 2]
-loves = Explosive putty [explosive]
+loves = Protecting the hive {size = 2}
+loves = Explosive putty {explosive}
 hates = Rain
 hates = Jerry Seinfeld
 hates = Wasps

@@ -5,13 +5,15 @@
 #
 # ------------------------------------------------------------------------------------------------------------------------
 # TRAITS
-# Put any of these in square brackets after an entry, and whoever gets that entry gets the trait:
+# Put any of these in {curly brackets} after an entry, and whoever gets that entry gets the trait:
 #
-#     Energy drinks [speed = 2.5]
-#     Naps [lounging = 5, speed = 0.8]
-#     Moonwalking [backwards]
+#     Energy drinks {speed = 2.5}
+#     Naps {lounging = 5, speed = 0.8}
+#     Moonwalking {backwards}
 #
-# Separate several with commas (or give each its own brackets). A trait with no value, like [backwards], is switched on.
+# Separate several with commas (or give each its own brackets). A trait with no value, like {backwards}, is switched on.
+# In loves and hates, `Card text | spoken text` gives how it's said aloud (see speech/about.txt), [placeholders] fill in
+# a word per person, and <tastes, vice> puts it in those speech categories.
 # Moods, enjoys, hates (even names) can all have traits, and someone's traits stack up: they multiply together — two
 # entries with speed = 2 make someone four times as fast — except mood and the eye looks (happy, sad, angry, shock),
 which add up. Everyone starts at the value in
@@ -62,7 +64,7 @@ which add up. Everyone starts at the value in
 #   loves, hates @ weight
 #   1, 1 @ 0.6            60% of people: one love, one hate
 #
-# SOLO: [ solo ] on an enjoy or a hate makes it the only one of its kind that person has: a solo enjoy means no other
+# SOLO: { solo } on an enjoy or a hate makes it the only one of its kind that person has: a solo enjoy means no other
 # enjoys, a solo hate no other hates. The other side is unaffected, so they can end up with just that one entry.
 #
 # ------------------------------------------------------------------------------------------------------------------------
@@ -70,8 +72,8 @@ which add up. Everyone starts at the value in
 # LIMITATIONS!!!
 # Limits can be used to prevent nonsensical combinations, and are called just like ordinary traits, with a few exceptions:
 # Limits are numbered, and have a polarity: Rule 1a is incompatible with 1b, 33b incompatible with 33a, and so on.
-# A limit is stated as: [ limit = 1a ]
-# To put multiple limits, use commas: [ limit = 1a, limit = 3b]
+# A limit is stated as: { limit = 1a }
+# To put multiple limits, use commas: { limit = 1a, limit = 3b}
 # Existing limits below:
 #
 #   1.      Vampirism:       a = Vampiric, b = Harmful to vampires
@@ -80,8 +82,8 @@ which add up. Everyone starts at the value in
 
 #
 # ------------------------------------------------------------------------------------------------------------------------
-#Live grenades [explosive] Removed because no indicator
-# [ vampire ] brings agemult 4.5, evil 0.5, ageless, aggression 50, speed 1.2, bloodlust, dodge 0.5 and limit 1a. Edit TRAIT_MACROS in core/traits.js to change it.
+#Live grenades {explosive} Removed because no indicator
+# { vampire } brings agemult 4.5, evil 0.5, ageless, aggression 50, speed 1.2, bloodlust, dodge 0.5 and limit 1a. Edit TRAIT_MACROS in core/traits.js to change it.
 
 [distribution]
 1, 1 @ 0.6

@@ -15,15 +15,15 @@ I think I'll go take a nap now, [farewells]. [farewells]! {lounging}
 See ya, [prejoratives]! {end = bad, evil}
 Get out of my face. {end = bad, aggression, patience = -1}
 Whatever, [prejoratives]. Fuck you. {end = bad, aggression}
-I'm out of here
+I'm out of here.
 Hope you feel better, [other.name]. [farewells]! {end, other.is = sad, evil = -1}
 Oh, and whatever's wrong with you? I hope it kills you. {evil, aggression}
-Drink a glass of water when you get home! {end, other.is = drunk, !evil}
-Get out of here, drunk. {aggressive}
+Drink a glass of water when you get home! {end, other.is = drunk, evil = -1}
+Get out of here, drunk. {aggression, other.is = drunk}
 Hope you feel better soon! [farewells] {end, other.is = hurt}
 Alright, have a good one!
 Bye, bye bye, bye bye bye, bye! {fidgety}
 Anyway, I won't keep you! [farewells]!
 Remember, I'm here for you; in this crazy world, we need to stick together. {evil = -1, world.morality = -1}
 Stay safe out there. {evil = -1, world.morality = -1}
-I'll leave you with this: []
+I'll leave you with this: [musings]

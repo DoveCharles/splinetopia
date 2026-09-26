@@ -4,12 +4,22 @@
 # assets/text/index.txt, which serve.py rewrites itself — after adding or moving files without it running, run
 # `python3 serve.py --index`, and commit index.txt so the deployed site sees them.
 # The lists in text/people/ are categories too — [boynames], [girlnames], [unisexnames], [surnames], [nicknames],
-# [moods], [loves], [hates] — with their [trait] brackets left off. The loves and hates are also copied into
-# words/topics/, sorted by subject ([tastes], [hobbies], [folk], [vice]...; [topics] is them all) with {tags} from their
-# traits: add new ones to both, keeping the words the same, so someone's own love still matches.
+# [moods], [loves], [hates] — their {traits} read as tags (a trait's effect, as a lean: {aggression = 2} leans toward the
+# aggressive). Loves and hates are said with a small first letter, or as the wording after a | if there is one:
+#   Whatever they think of next | whatever I think of next {nerd = 2}
+#   Taylor Swift | Taylor Swift <media>                          (a | keeps a name's capital)
+#   Their [pets#1: plural] | my [pets#1: plural] <nature>        (filled once per person: their card says "Their cats",
+#                                                                 they say "my cats", and cats count as loved)
+# In a love or hate, [ ] is a placeholder, as here; the spoken wording's placeholders take the card's picks in order.
+# <CATEGORIES>: any entry in any file here or in people/ can join other categories as well as its own, with <names> last:
+#   mouse | mice <pets, livestock>       (in animals.txt: also in [pets] and [livestock])
+#   Nice weather. <smalltalk>            (a line shared into another topic; not on replies)
+#   Energy drinks {stimulants = 2} <tastes, vice>
+# A category is its file (if any) plus every entry tagged <with its name>: words/topics/tastes.txt is [tastes] — loves and
+# hates tagged <tastes>, and whatever's written in the file itself. A category can also be <tagged> entries alone.
 # Only files in speech/ and people/ are categories: the rest of assets/text/ (bees.txt, cars.txt, tv.txt...) is never
 # read for speech, so [bees] or [cars] won't work. about.txt files are never categories either.
-# Speech starts from dialogue.txt (conversations), thoughts.txt (alone, as they fidget; no replies, shown but not said) and reactions.txt
+# Every category file is loaded at start. Speech starts from dialogue.txt (conversations), thoughts.txt (alone, as they fidget; no replies, shown but not said) and reactions.txt
 # (straight after seeing a death), plus closers.txt (ending a conversation) and fleeing.txt (called out as people run). Blank lines and # lines are skipped.
 #
 # ------------------------------------------------------------------------------------------------------------------------
@@ -57,6 +67,8 @@
 #   {patience = -1}           leans toward speakers low in it
 #   {nosy, chatty = 0.5}      several at once: leans toward the nosy, and a little toward the chatty
 #   {aggression = -0.5, happy} a little toward the gentle, and toward the happy
+#   {man}  {man = -1}  {woman = 0.5}   sex, as a trait: man is +1 for men, -1 for women (woman the reverse; 0 for cuboid people)
+#   {man > 0}  {woman > 0}  {other.man = 1}  {other.woman > 0}   only men / only women / leaning toward talking to men / only to women
 #   Each trait's value is measured from its neutral (0, or 1 for traits that multiply) toward its max or min, so every
 #   trait counts the same, -1 to +1.
 #   On an include line, tags are added to every entry reached through that line only: [knives] {evil = 0.5} in
@@ -97,6 +109,15 @@
 #   {other.is = bloody}       only to someone covered in blood — "Is that blood on you?! {other.is = bloody}"
 #   {other.is = drunk}        "> I think you've had enough. {other.is = drunk}"
 #   {other.is != happy}       only when they're not looking happy
+#
+# LIKES: how much the replier likes a word picked in the line they're answering, -1 to 1 — 1 if it's one of their loves,
+# -1 one of their hates, else the word's own {tags} read against their traits (0 for a word without tags)
+#   {likes}                   leans toward repliers who like the last word picked in the line above: "I love killing"
+#                             ({evil} in vice.txt) gets "> Me too! {likes}" from the evil, and now and then from the good
+#   {likes = -1}              leans toward those who dislike it      {likes = 0.5}   a gentler lean
+#   {likes > 0}               only if they like it (hard)            {likes < 0}     only if they dislike it
+#   {likes > 0.5}             only if they like it a lot             {likes #1 < 0}  about the word held as #1 instead
+#   {likes = -1, aggression}  disliking it, leaning toward the aggressive
 # Questions and remarks about the other person should be limited like this, so nobody asks why a smiling person's
 # crying. In a reply, the other person is whoever said the line above it: "You make me so mad. > Why are you crying?"
 # asks the first speaker.
@@ -131,6 +152,17 @@
 #   Catch you later, [other.name]. {end}
 #   [seen.by] just punched [seen.name]! {seen = punch}
 #   Ow! What was that for, [felt.by]? {felt = punched}
+# LOVES AND HATES BY NAME: [me.loves], [me.hates] one of the speaker's own; [other.loves], [other.hates] one of who
+# they're talking to's: the entry as they say it (filled in for them — see above), with its tags.
+# Hold one with #n; replies' {likes} read it like any word. A line isn't said if they've none.
+#   Actually, I hate [me.hates] more.
+#   > [me.loves#1]. >> Really? [me.loves#1]? {likes #1 < 0}
+#   You love [other.loves], don't you? {nosy}
+# [both.loves], [both.hates]: one the speaker and who they're talking to share; [both.clash]: one the speaker loves and
+# the other hates. Not said unless there is one, so these lines only come up when true.
+#   We both love [both.loves], don't we? {chatty}
+#   At least we agree [both.hates] is awful.
+#   How can you hate [both.clash]?
 #
 # ------------------------------------------------------------------------------------------------------------------------
 # LOVES AND HATES

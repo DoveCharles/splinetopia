@@ -1,10 +1,10 @@
-Funcle [agemult = 1.1]
+Funcle {agemult = 1.1}
 Freakazoid
 Teeth
 Hot Tub
 Big Dick
-The Killer [aggression = 10, evil = 0.4]
-The Destroyer [aggression = 10, evil = 0.2]
+The Killer {aggression = 10, evil = 0.4}
+The Destroyer {aggression = 10, evil = 0.2}
 iPod
 Gorebag
 Grubs
@@ -65,7 +65,7 @@ Like New
 Normal
 Lord of Men
 Tamer of Horses
-Swift-Footed [speed = 1.2]
+Swift-Footed {speed = 1.2}
 Destroyer of Mice
 Bright-Eyed
 Ricecake
@@ -73,8 +73,8 @@ Fair-Cheeked
 Dread Goddess
 Lovely-Ankled
 Cunning
-Raider of Troy [aggression = 4]
-Feeder of Ravens [aggression = 4]
+Raider of Troy {aggression = 4}
+Feeder of Ravens {aggression = 4}
 Silicon
 Twinkle Toes
 Archives
@@ -86,8 +86,8 @@ Raisins
 Hatred
 Chalk
 Cheeks
-The Racist [evil = 0.3, aggression = 4]
-The Holy [evil = -0.3, aggression = 0]
+The Racist {evil = 0.3, aggression = 4}
+The Holy {evil = -0.3, aggression = 0}
 Pink Eye
 Nonbinary
 #1 Nephew
@@ -109,12 +109,12 @@ Bum Fluff
 The System
 Anus
 Forklift
-Actual Cannibal [evil = 0.3, aggression = 4]
+Actual Cannibal {evil = 0.3, aggression = 4}
 Salmonella
 CBT
 Toothbrush
 99
-One Week Left [mood = -0.3]
+One Week Left {mood = -0.3}
 Plug
 Cardboard
 Pornhub
@@ -122,7 +122,7 @@ Grindstone
 The Feeler
 Smells
 Bruh
-The White [bleach]
+The White {bleach}
 Streaky
 Lord of The Flies
 Toothpick
@@ -150,7 +150,7 @@ Shortwave
 Of Pain
 Wikipedia
 Meta
-Oven Mitts [keysmash]
+Oven Mitts {keysmash}
 Stodgepodge
 Straight
 Popular

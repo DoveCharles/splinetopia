@@ -66,6 +66,14 @@ Promise.all(fileNames.map(readPeopleFile))
   .catch(err => console.warn('Kallipolis: the people files failed to load; people get placeholder names', err));
 
 export const profilesVersion = () => version;
+// Fills an entry's [placeholders] for a card, once speech has loaded (life/speech-text.js hands it over): (entry, rng) →
+// { card, said, words }. Until then entries show as written.
+let fillEntry = null;
+export function setEntryFiller(fill) {
+  fillEntry = fill;
+  version++;
+  listeners.forEach(listener => listener());
+}
 // `listener` is called whenever the people files have loaded
 export function onProfilesLoaded(listener) { listeners.push(listener); }
 
@@ -111,7 +119,11 @@ export function profileOf(id, isMan) {
   //unknown entities have hidden traits
   // (UNKNOWN) people hide every love, every hate, or both — never neither. A hidden side that has no entries shows a single
   // (UNKNOWN), with no tier (nothing to colour gold or dark reddish-brown while it's a mystery).
-  let loveTexts = loves.map(entry => entry.text), hateTexts = hated.map(entry => entry.text);
+  // (placeholders filled on their own stream, so filling doesn't change anything else picked)
+  const fillRng = mulberry32(60013 + id*3371);
+  const filledOf = entry => fillEntry ? fillEntry(entry, fillRng) : { card: entry.text, said: entry.said ?? entry.text, words: [] };
+  const lovesFilled = loves.map(filledOf), hatesFilled = hated.map(filledOf);
+  let loveTexts = lovesFilled.map(filled => filled.card), hateTexts = hatesFilled.map(filled => filled.card);
   let loveTiers = loves.map(tierOf), hateTiers = hated.map(tierOf);
   let loveMods = loves.map(modifiersOf), hateMods = hated.map(modifiersOf);
   if (name.text === '(UNKNOWN)') {
@@ -128,5 +140,8 @@ export function profileOf(id, isMan) {
   // `loves` and `hates` are lists of text; at most one is ever empty. `lovesTier`/`hatesTier` run alongside, entry for
   // entry (see tierOf): 'legendary' or 'terrible' or null, for the card to colour that entry's row (ui/entity-card.js).
   // `lovesMods`/`hatesMods` likewise: each entry's modifier lines (see modifiersOf) — none for a hidden (UNKNOWN) one.
-  return { name: fullname, age, mood: mood.text, loves: loveTexts, hates: hateTexts, lovesTier: loveTiers, hatesTier: hateTiers, lovesMods: loveMods, hatesMods: hateMods, traits: traits};
+  // `lovesSaid`/`hatesSaid`: the same, worded for speech (never hidden); `lovedWords`/`hatedWords`: words filled into them
+  return { name: fullname, age, mood: mood.text, loves: loveTexts, hates: hateTexts,
+    lovesSaid: lovesFilled.map(filled => filled.said), hatesSaid: hatesFilled.map(filled => filled.said),
+    lovedWords: lovesFilled.flatMap(filled => filled.words), hatedWords: hatesFilled.flatMap(filled => filled.words), lovesTier: loveTiers, hatesTier: hateTiers, lovesMods: loveMods, hatesMods: hateMods, traits: traits};
 }

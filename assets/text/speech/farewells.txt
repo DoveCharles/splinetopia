@@ -1,5 +1,5 @@
 bye bye
-byeeee [mood]
+byeeee {mood}
 farewell
 see ya
 see you later
