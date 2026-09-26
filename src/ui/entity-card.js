@@ -40,7 +40,9 @@ export const cards = [];
 // same place (a building's Enter: see buildings/interior.js), its wording changed later with setAction and hidden with
 // showAction. `labels` renames rows for this card ({ occupants: 'Passengers' }). `health` adds a thin bar under the
 // picture: bindHealth(entity, kind) makes it follow that entity's health (core/health.js); setHealth sets it by hand.
-export function makeCard({ id, title, onClose, thumb = {}, kill = null, action = null, labels = {}, health = false }) {
+// `tabs`: sheet tabs under the title bar (the first is the card's own rows; the rest get empty panes: tabPane(key), keys
+// lower-cased); onTab(listener) hears selectTab. `effects`: a column of status icons right of the picture (setEffects).
+export function makeCard({ id, title, onClose, thumb = {}, kill = null, action = null, labels = {}, health = false, tabs = null, effects = false }) {
   const el = document.createElement('div');
   el.id = id;
   el.className = 'entity-card';
@@ -158,8 +160,82 @@ export function makeCard({ id, title, onClose, thumb = {}, kill = null, action =
   const topSection = document.createElement('div');
   topSection.className = 'pc-top';
   topSection.append(top, shot);
-  el.append(titlebar, heart, close, topSection, body);
+  let effectsEl = null;
+  if (effects) {
+    effectsEl = document.createElement('div');
+    effectsEl.className = 'pc-effects';
+    topSection.append(effectsEl);
+  }
+  el.append(titlebar, heart, close);
+  const panes = {}, tabButtons = {}, tabListeners = [];
+  let activeTab = null;
+  if (tabs) {
+    el.classList.add('pc-has-tabs');
+    const strip = document.createElement('div');
+    strip.className = 'pc-tabs';
+    tabs.forEach((label, i) => {
+      const key = label.toLowerCase(), button = document.createElement('button');
+      button.className = 'pc-tab';
+      const text = document.createElement('span');
+      text.textContent = label;
+      fixedText.push([text, label]);
+      button.append(text);
+      button.addEventListener('click', () => selectTab(key));
+      strip.append(button);
+      tabButtons[key] = button;
+      if (i === 0) { activeTab = key; button.classList.add('on'); return; }
+      const pane = panes[key] = document.createElement('div');
+      pane.className = 'pc-pane pc-pane-' + key;
+      pane.hidden = true;
+    });
+    el.append(strip);
+  }
+  el.append(topSection, body, ...Object.values(panes));
   document.body.append(el);
+  // Shows tab `key`, the card easing to its new height (see resizeSmoothly).
+  function selectTab(key) {
+    if (!tabButtons[key] || key === activeTab) return;
+    const own = !panes[key];
+    resizeSmoothly(() => {
+      topSection.style.display = body.style.display = own ? '' : 'none';
+      Object.entries(panes).forEach(([k, pane]) => { pane.hidden = k !== key; });
+    });
+    Object.entries(tabButtons).forEach(([k, button]) => button.classList.toggle('on', k === key));
+    activeTab = key;
+    if (own) layoutDrops();
+    tabListeners.forEach(listener => listener(key));
+  }
+  // Runs `change`, then slides the card's top edge from its old height to its new one over RESIZE_TIME. Only `translate`
+  // and `clip-path` animate (no layout per frame), so it stays smooth while the scene is busy: the card is laid out once
+  // at the taller size, shifted down by the difference and clipped at its bottom anchor. (`translate`, not `transform`,
+  // which dragging uses.)
+  const RESIZE_TIME = 180, CLIP_SPARE = '-6px'; // (the spare keeps the Win3 outline unclipped)
+  let resizeAnim = null;
+  const endResize = () => { resizeAnim = null; el.style.height = el.style.boxSizing = ''; };
+  function resizeSmoothly(change) {
+    if (resizeAnim) { resizeAnim.cancel(); endResize(); }
+    const from = el.offsetHeight;
+    change();
+    const to = el.offsetHeight;
+    if (el.hidden || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const shift = Math.abs(to - from);
+    if (to < from) { el.style.boxSizing = 'border-box'; el.style.height = from + 'px'; } // (held tall until the slide's done)
+    const tall = { translate: '0 0', clipPath: `inset(${CLIP_SPARE})` };
+    const short = { translate: `0 ${shift}px`, clipPath: `inset(${CLIP_SPARE} ${CLIP_SPARE} ${shift}px ${CLIP_SPARE})` };
+    const anim = resizeAnim = el.animate(to > from ? [short, tall] : [tall, short], { duration: RESIZE_TIME, easing: 'ease-out' });
+    anim.onfinish = () => { if (resizeAnim === anim) endResize(); };
+  }
+  // `list`: [{ icon, title }], top to bottom
+  function setEffects(list) {
+    if (!effectsEl) return;
+    effectsEl.replaceChildren(...list.map(({ icon, title }) => {
+      const item = document.createElement('div');
+      item.className = 'pc-effect';
+      item.textContent = icon;
+      if (title) item.title = title;
+      return item;
+    }));
+  }
 
   // ---- modifier drop-downs: an entry with modifiers (`<key>Mods`, see set) opens a list of them beneath it when clicked,
   // until clicked again — so several can be open at once.
@@ -351,7 +427,8 @@ export function makeCard({ id, title, onClose, thumb = {}, kill = null, action =
 
   dragByTitle(el, () => !matchMedia('(max-width: 760px)').matches);
 
-  const card = { el, canvas, show, hide, resetPlace, set, setList, relabel, setFavorite, setAction, showAction, setHealth, bindHealth };
+  const card = { el, canvas, show, hide, resetPlace, set, setList, relabel, setFavorite, setAction, showAction, setHealth, bindHealth,
+    setEffects, selectTab, tabPane: key => panes[key] ?? null, activeTab: () => activeTab, onTab: listener => { tabListeners.push(listener); } };
   cards.push(card);
   return card;
 }

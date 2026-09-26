@@ -24,7 +24,7 @@ export function entryOf(line, { traits: table = TRAITS, file }) {
   const traits = [];
   const rules = [];
   const categories = [];
-  let text = line, group, weight = 1;
+  let text = line, group, weight = 1, appeal = null;
   while ((group = text.match(TRAILING))) {
     text = text.slice(0, group.index).trimEnd();
     if (group[2] != null) { categories.unshift(...group[2].split(',').map(name => name.trim().toLowerCase()).filter(Boolean)); continue; }
@@ -45,6 +45,7 @@ export function entryOf(line, { traits: table = TRAITS, file }) {
         warnOnce(`Kallipolis: in ${file}, "${part.trim()}" (after "${text}") needs a whole number of 0 or more`);
         return;
       }
+      if (key === 'appeal' && Number.isFinite(value)) { appeal = value; return; } // (speech only: how liked it is generally)
       if (RULES.includes(key)) { foundRules.push([key, rawValue == null ? '' : rawValue.trim()]); return; }
       if (table[key] && Number.isFinite(value)) { found.push([key, value]); return; }
       warnOnce(`Kallipolis: in ${file}, "${part.trim()}" (after "${text}") isn't a known trait — see core/traits.js`);
@@ -54,10 +55,10 @@ export function entryOf(line, { traits: table = TRAITS, file }) {
   }
   const bar = text.indexOf('|'), said = bar < 0 ? null : text.slice(bar + 1).trim() || null;
   if (bar >= 0) text = text.slice(0, bar).trim();
-  return { text, said, traits, weight, rules, categories };
+  return { text, said, traits, weight, rules, categories, appeal };
 }
 // An entry with no traits, for placeholder text.
-export const plainEntry = text => ({ text, said: null, traits: [], weight: 1, rules: [], categories: [] });
+export const plainEntry = text => ({ text, said: null, traits: [], weight: 1, rules: [], categories: [], appeal: null });
 // An entry repeated `weight` times (so a random pick favours it); none if the weight is 0.
 export const weighted = entry => Array.from({ length: entry.weight }, () => entry);
 

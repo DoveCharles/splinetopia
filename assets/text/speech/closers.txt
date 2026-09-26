@@ -27,3 +27,6 @@ Anyway, I won't keep you! [farewells]!
 Remember, I'm here for you; in this crazy world, we need to stick together. {evil = -1, world.morality = -1}
 Stay safe out there. {evil = -1, world.morality = -1}
 I'll leave you with this: [musings]
+Lovely chatting, [other.name]! {end, talk.score > 1}
+Well, that was unpleasant. {end = bad, talk.score < -1}
+I think we're done here. {end = bad, talk.score = -1, patience}

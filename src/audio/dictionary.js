@@ -3,7 +3,7 @@ import { S } from '../core/shared.js';
 import { listener, playBufferAt, muffler, ear } from './sfx.js';
 import { speakText, SAMPLE_RATE } from './speech.js';
 import { loudnessOf, hearDistance, hearRef, edgeFade } from './voices.js';
-import { speechReady, pickCall, pickReply, pickReaction, pickCloser, pickShout, hasNews } from '../life/speech-text.js';
+import { speechReady, pickCall, pickReply, pickReaction, pickCloser, pickGreeting, pickShout, hasNews } from '../life/speech-text.js';
 
 // ============================================================ real words
 // Now and then someone talking near the camera says something real in among their babble (see audio/voices.js): a line
@@ -48,9 +48,14 @@ export function sayLine(at, voice, who, person) {
   // (who they're talking to, for other. tags: whoever said the line they're replying to, else whoever they're facing)
   const facing = group?.members.includes(person.lookAt) ? person.lookAt : null;
   let said = pickReaction(person, facing);
+  // (someone's just joined their circle: see welcome in life/people/peopleActivities.js)
+  const greet = person.greetTo;
+  if (greet && (performance.now()/1000 > greet.until || !group?.members.includes(greet.who))) person.greetTo = null;
+  else if (!said && greet) { said = pickGreeting(person, greet.who); person.greetTo = null; }
   if (!said && talk && talk.by !== person && now < talk.until) { said = pickReply(talk.replies, person, talk.vars, talk.by); group.talk = null; }
-  // (a conversation whose time is up wants a closer: see updateGroups in life/people/peopleActivities.js)
-  if (!said && group?.wantsEnd) said = pickCloser(person, facing);
+  // (a conversation whose time is up wants a closer, or someone leaving a circle does: see updateGroups and the circle's
+  // 'sit' stage in life/people/peopleActivities.js)
+  if (!said && (group?.wantsEnd || person.closing)) said = pickCloser(person, facing);
   if (!said) {
     // (with Options > Speech > Babble only as fallback, every phrase tries for a real line: see linePause)
     if (now < (quietOf(person).quietUntil ?? 0) || (!S.babbleFallbackOnly && Math.random() >= LINE_CHANCE*chatSpeed())) return null;
@@ -58,6 +63,7 @@ export function sayLine(at, voice, who, person) {
   }
   if (!said) return null;
   const line = voiceLine(said, at, voice, who, person);
+  if (line && group && said.score) group.score = (group.score ?? 0) + said.score; // (see {score}: how the conversation's going)
   if (line && group) group.talk = said.replies.length && !said.end ? { replies: said.replies, vars: said.vars, by: person, until: now + line.length + REPLY_WINDOW } : null;
   return line;
 }
@@ -165,5 +171,6 @@ function finish(line) {
  */
 export function linePause(person) {
   const now = listener.context.currentTime;
+  if (person.group?.wantsEnd || person.closing || person.greetTo) return true; // (their goodbye's due: no babble while they wait for a chance to say it)
   return !!S.babbleFallbackOnly && (now < (quietOf(person).quietUntil ?? 0) || now - lastStart < LINE_START_GAP);
 }

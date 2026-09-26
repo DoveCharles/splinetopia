@@ -407,3 +407,23 @@ html.win3 .w3-window.w3-sized .w3-dialog-body { flex:1; min-height:0; max-height
 
 html.win3 .car-details .cd-bar { background:var(--w3-window); border:1px solid var(--w3-frame); }
 html.win3 .car-details.win3-minimized .win3-titlebar { margin-bottom:0; }
+
+/* the person card's sheet tabs, Excel-style, hanging under the title bar: the active one white and joined to the sheet */
+html.win3 .entity-card.pc-has-tabs .win3-titlebar { margin-bottom:0; }
+html.win3 .pc-tabs { margin:0 -10px 8px; padding:3px 8px 0; background:var(--w3-face); border-bottom:1px solid var(--w3-frame); }
+html.win3 .pc-tab {
+  position:relative; height:18px; padding:0 14px; margin:0 0 -1px -6px; border:none; border-radius:0; background:var(--w3-frame);
+  clip-path:polygon(0 100%, 7px 0, calc(100% - 7px) 0, 100% 100%); color:var(--w3-text);
+}
+html.win3 .pc-tab:first-child { margin-left:0; }
+html.win3 .pc-tab::before {
+  content:''; position:absolute; inset:1px 1px 1px; background:color-mix(in srgb, var(--w3-face) 45%, var(--w3-window));
+  clip-path:polygon(0 100%, 6.6px 0, calc(100% - 6.6px) 0, 100% 100%);
+}
+html.win3 .pc-tab > span { position:relative; }
+html.win3 .pc-tab.on { z-index:1; font-weight:700; }
+html.win3 .pc-tab.on::before { bottom:0; background:var(--w3-window); }
+html.win3 .pc-effects { margin-top:0; }
+html.win3 .pc-rel-friends, html.win3 .pc-rel-enemies { outline:1px solid var(--w3-frame); }
+html.win3 .pc-said-list { background:var(--w3-window); box-shadow:inset 1px 1px 0 var(--w3-shadow); }
+html.win3 #person-card .pc-effect { font-size:16px; line-height:20px; }

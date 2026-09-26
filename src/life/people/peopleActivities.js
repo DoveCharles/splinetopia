@@ -19,6 +19,7 @@ import { crawlOffRoad, updateCrawl } from './peopleRoad.js';
 import { REVIVE_SHAKE_TIME } from '../revive.js';
 import { strikeLightning } from '../lightning.js';
 import { damage, heal } from '../../core/health.js';
+import { RELATE, relateAll, relateBoth, introduceAll } from './peopleRelations.js';
 
 // ---- what people get up to besides walking about.
 //
@@ -46,14 +47,17 @@ function removeGroup(g) {
  * @returns {void}
  */
 const BAD_END_PUNCH = 0.2; // chance, per unit of aggression, of going for the other after a conversation ends badly
+const SCORE_RELATE = 3;    // how far each point of a conversation's score ({score} lines: g.score) moves how they feel about each other
+const talked = (g, delta) => { relateAll(g.members, delta + (g.score ?? 0)*SCORE_RELATE); introduceAll(g.members); };
 function endChat(g, how = null) {
   removeGroup(g);
+  if (how === 'bad') talked(g, RELATE.badChat); else if (g.stage !== 'gather') talked(g, RELATE.chat);
   const chatGroup = g.members.splice(0);
   chatGroup.forEach(m => { m.group = null; finishActivity(m); });
   if (how !== 'bad' || chatGroup.length !== 2 || !hasClip('Punch') || !hasClip('Fall')) return;
   chatGroup.forEach((m, i) => {
     const other = chatGroup[1 - i];
-    if (!m.attack && isFairGame(other) && peopleRng() < BAD_END_PUNCH*m.traits.aggression) goAfter(m, other);
+    if (!m.attack && isFairGame(other) && peopleRng() < BAD_END_PUNCH*m.traits.aggression) goAfter(m, other, false, true);
   });
 }
 
@@ -68,10 +72,62 @@ function endedByLine(g) {
   if (!ending) return false;
   g.ending = null; g.speaker = null;
   if (g.kind === 'room') endRoomChat(g);
-  else if (g.kind === 'circle') { if (g.members.includes(ending.by)) finishActivity(ending.by); }
+  else if (g.kind === 'circle') { if (g.members.includes(ending.by)) leaveCircle(ending.by, ending.how); }
   else if (ending.how === 'bad') endChat(g, 'bad');
   else wave(g, 'bye');
   return true;
+}
+
+/**
+ * Someone arriving at a circle: those sat in it look round at them, and one who isn't mid-line greets them
+ * (greetings.txt — see p.greetTo and audio/dictionary.js), straight away if nobody's talking, else next turn.
+ * @param {Person} p - who's joining
+ * @returns {void}
+ */
+const GREET_WAIT = 5; // seconds a greeting can wait for its turn before it's dropped
+function welcome(p) {
+  const g = p.group, seated = g.members.filter(m => m !== p && m.stage === 'sit');
+  seated.forEach(m => { if (!m.saying) m.lookAt = p; });
+  const free = seated.filter(m => !m.saying && !m.closing);
+  if (!free.length) return;
+  const greeter = pickFrom(free);
+  greeter.greetTo = { who: p, until: performance.now()/1000 + GREET_WAIT };
+  if (!g.speaker?.saying) { g.speaker = greeter; g.turnIn = 2; closeNow(greeter); }
+}
+
+/**
+ * Someone getting up to leave a circle after saying a closer: they wave to whoever's left, or, on a rude one
+ * ({end = bad}), just go — see brawl.
+ * @param {Person} p
+ * @param {'good'|'bad'} how
+ * @returns {void}
+ */
+function leaveCircle(p, how) {
+  p.closing = false;
+  p.leftBadly = how === 'bad';
+  if (p.stage === 'sit') { p.stage = 'rise'; p.pose = 'Idle'; p.lookAt = null; } else finishActivity(p);
+}
+/**
+ * After someone leaves a circle badly: they roll BAD_END_PUNCH × aggression against each still in it and go after
+ * everyone rolled, one after another (p.attackQueue, see endAttack); each of them rolls the same against the leaver.
+ * @param {Person} p - who left
+ * @param {Person[]} others - who was still in the circle
+ * @returns {void}
+ */
+// (still sat in the circle counts: they're got up when the punch comes — see updateAttack)
+const inReach = m => isFairGame(m) || (m.act === 'circle' && m.stage === 'sit' && !m.punched);
+function brawl(p, others) {
+  p.leftBadly = false;
+  others.forEach(m => relateBoth(p, m, RELATE.badChat));
+  if (!hasClip('Punch') || !hasClip('Fall')) return;
+  const targets = others.filter(m => inReach(m) && peopleRng() < BAD_END_PUNCH*p.traits.aggression);
+  for (let i = targets.length - 1; i > 0; i--) { const j = Math.floor(peopleRng()*(i + 1)); [targets[i], targets[j]] = [targets[j], targets[i]]; }
+  if (targets.length && !p.attack) { goAfter(p, targets.shift(), false, true); p.attackQueue = targets; }
+  others.forEach(m => {
+    if (m.attack || !isFairGame(p) || peopleRng() >= BAD_END_PUNCH*m.traits.aggression) return;
+    finishActivity(m); // (up off the grass to go for them)
+    goAfter(m, p, false, true);
+  });
 }
 
 /**
@@ -86,6 +142,7 @@ function leaveGroup(p) {
   g.members.splice(g.members.indexOf(p), 1);
   if (g.speaker === p) g.speaker = null;
   g.members.forEach(m => { if (m.lookAt === p) m.lookAt = null; });
+  if (g.kind === 'circle') { g.members.forEach(m => relateBoth(p, m, RELATE.circle + (g.score ?? 0)*SCORE_RELATE)); introduceAll([p, ...g.members]); }
   // a conversation between two ends when either goes; a circle carries on while anyone's left in it
   if (g.kind === 'chat') endChat(g); else if (g.kind === 'room') endRoomChat(g); else if (!g.members.length) removeGroup(g);
 }
@@ -215,7 +272,7 @@ function takeTurns(g, talkers, dt) {
   if (!talkers.includes(g.speaker) || g.turnIn <= 0) {
     // the more talkative someone is, the more of the turns they take, and the longer they go on
     const others = talkers.filter(m => m !== g.speaker);
-    g.speaker = others[pickWeighted(others, m => m.traits.talkative)];
+    g.speaker = others.find(m => m.closing || (m.greetTo && performance.now()/1000 < m.greetTo.until)) ?? others[pickWeighted(others, m => m.traits.talkative)]; // (someone leaving a circle gets to say goodbye)
     g.turnIn = (1.5 + peopleRng()*4)*Math.sqrt(g.speaker.traits.talkative);
     g.speaker.lookAt = pickFrom(talkers.filter(m => m !== g.speaker));
   }
@@ -229,6 +286,8 @@ function takeTurns(g, talkers, dt) {
  * @returns {void}
  */
 const CLOSE_WAIT = 4; // seconds, after a conversation's time is up, for someone to say a closer before they just wave
+// (whoever's to say the closer drops the babble they're partway through, so it comes at once — see linePause in audio/dictionary.js)
+const closeNow = p => { if (p && !p.saying) { p.phrase = null; p.talkIn = 0; } };
 export function updateGroups(dt) {
   for (let gi = groups.length - 1; gi >= 0; gi--) {
     const g = groups[gi];
@@ -253,7 +312,7 @@ export function updateGroups(dt) {
       takeTurns(g, g.members, dt);
       // time's up: someone says a closer (closers.txt — polite from the patient, rude from the impatient: see
       // audio/dictionary.js), which ends it; if nobody does within CLOSE_WAIT, they just wave
-      if (g.timer <= 0 && !g.wantsEnd) { g.wantsEnd = true; g.timer = CLOSE_WAIT; }
+      if (g.timer <= 0 && !g.wantsEnd) { g.wantsEnd = true; g.timer = CLOSE_WAIT; closeNow(g.speaker); }
       else if (g.timer <= 0 && !g.speaker?.saying) { g.speaker = null; wave(g, 'bye'); }
     } else if (g.timer <= 0) {
       endChat(g);
@@ -407,6 +466,7 @@ export function updateActivity(p, area, dt) {
     case 'turn':
       p.faceTo = facing;
       if (Math.abs(wrapAngle(facing - p.heading)) > 0.15) break;
+      if (p.act === 'circle' && p.group.members.some(m => m.stage === 'sit')) welcome(p);
       if (p.act === 'circle' && hasClip('Wave') && p.group.members.some(m => m.stage === 'sit')) { playOnce(p, 'Wave'); p.stage = 'greet'; break; }
       // falls through
     case 'greet':
@@ -418,12 +478,23 @@ export function updateActivity(p, area, dt) {
       // falls through
     case 'sit':
       p.timer -= dt;
-      if (p.timer <= 0) { p.stage = 'rise'; p.pose = 'Idle'; p.lookAt = null; }
+      if (p.closing && p.saying) p.timer = Math.max(p.timer, 0.5); // (their goodbye isn't cut short)
+      // (time up in a circle with others to talk to: first a turn to say a closer — closers.txt, see audio/dictionary.js,
+      // which leaves through endedByLine — for up to CLOSE_WAIT; then they just get up)
+      if (p.timer <= 0 && p.act === 'circle' && !p.closing && p.group?.members.filter(m => m.stage === 'sit').length >= 2) {
+        p.closing = true; p.timer = CLOSE_WAIT;
+        if (!p.group.speaker?.saying) { p.group.speaker = p; p.group.turnIn = CLOSE_WAIT; closeNow(p); } // (their turn now, to say it)
+      }
+      else if (p.timer <= 0) { p.closing = false; p.stage = 'rise'; p.pose = 'Idle'; p.lookAt = null; }
       break;
     case 'rise':
       if (weightOf(p, clipNamed('Idle')) < 1) break;
-      if (p.act === 'circle' && hasClip('Wave') && p.group.members.some(m => m !== p && m.stage === 'sit')) { playOnce(p, 'Wave'); p.stage = 'bye'; break; }
-      finishActivity(p);
+      if (p.act === 'circle' && !p.leftBadly && hasClip('Wave') && p.group.members.some(m => m !== p && m.stage === 'sit')) { playOnce(p, 'Wave'); p.stage = 'bye'; break; }
+      {
+        const leftBehind = p.act === 'circle' && p.leftBadly ? p.group.members.filter(m => m !== p) : null;
+        finishActivity(p);
+        if (leftBehind) brawl(p, leftBehind);
+      }
       return null;
     case 'bye':
       if (!p.oneShot) { finishActivity(p); return null; }
@@ -516,10 +587,11 @@ export function throwPunch(dt, p, isForced, forcedVictim) {
  * @param {Person} p - the one who'll punch
  * @param {Person} victim - who they're going after
  * @param {boolean} [revenge] - whether it's for a punch thrown at them or someone else, which nobody else then takes up
+ * @param {boolean} [social] - whether a conversation gone bad started it (see endChat, brawl): bystanders only talk about it
  * @returns {void}
  */
-export function goAfter(p, victim, revenge = false) {
-  p.attack = { target: victim, stage: 'chase', timer: PUNCH_CHASE_MAX*(revenge ? p.traits.patience : 1), revenge }; // (how long they'll chase someone for revenge goes by their patience)
+export function goAfter(p, victim, revenge = false, social = false) {
+  p.attack = { target: victim, stage: 'chase', timer: PUNCH_CHASE_MAX*(revenge ? p.traits.patience : 1), revenge, social }; // (how long they'll chase someone for revenge goes by their patience)
   p.lookAt = victim;
   if (!victim.punched) victim.punched = { by: p, stage: 'marked', timer: 0 }; // (several can be after one person: the first to reach them lands it)
 }
@@ -541,7 +613,7 @@ export function updateAttack(p, dt) {
   a.timer -= dt;
   if (a.stage === 'chase') {
     if ((t.punched?.by !== p && t.punched?.stage !== 'marked') || a.timer <= 0 || !(t.mode === 'line' || t.mode === 'wander' || t.mode === 'leaving' || t.mode === 'possessed') || t.jc) {
-      if (a.timer <= 0) feel(p, 'gaveup', t); // (ran out of chase: for what they say, see life/speech-text.js)
+      if (a.timer <= 0) { feel(p, 'gaveup', t); p.attackQueue = null; } // (ran out of chase: for what they say, see life/speech-text.js)
       endAttack(p); return null;
     }
     const d = Math.hypot(t.x - p.x, t.z - p.z), gap = CHAT_GAP*S.peopleSize;
@@ -611,6 +683,12 @@ function endAttack(p) {
   p.lookAt = null; p.faceTo = null;
   const t = a.target;
   if (t.punched?.by === p && (t.punched.stage === 'marked' || t.punched.stage === 'brace')) { t.punched = null; t.faceTo = null; t.lookAt = null; }
+  // (anyone left in their queue — see brawl — is next, unless they've been knocked down themselves)
+  while (p.attackQueue?.length && !p.punched && p.mode !== 'dead') {
+    const next = p.attackQueue.shift();
+    if (inReach(next) && !next.punched) { goAfter(p, next, false, a.social); return; }
+  }
+  p.attackQueue = null;
 }
 
 /**
@@ -695,6 +773,7 @@ export function dodgePunch(t, from) {
  */
 function bystandersReactToPunch(victim, puncher) {
   if (!puncher?.traits || puncher.attack?.revenge || (puncher.punched && puncher.punched.stage !== 'marked')) return; // (a revenge punch is answered by no one but whoever it hit: see reactToPunch)
+  if (puncher.attack?.social) return; // (a row that came to blows: those near only see it and talk about it — witness, in knockDown — or whole parks would be forever running)
   const radius = BYSTANDER_RADIUS*S.peopleSize;
   people.forEach(q => {
     if (q === victim || q === puncher || isGone(q) || q.punched || q.attack || !['line', 'wander', 'leaving'].includes(q.mode)) return;
@@ -1759,6 +1838,7 @@ function roomChat(g, dt) {
  */
 function endRoomChat(g) {
   removeGroup(g);
+  if (g.stage !== 'gather') talked(g, RELATE.roomChat);
   g.members.splice(0).forEach(m => {
     m.group = null; m.lookAt = null;
     m.chatCooldown = 15 + peopleRng()*30;

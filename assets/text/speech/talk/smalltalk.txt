@@ -151,3 +151,11 @@ How can you hate [both.clash#1]? {weight = 0.5}
 > [both.clash#1] is disgusting. {aggression}
 >> Take that back! {aggression, end = bad}
 > Each to their own. {patience}
+Hi, I'm [me.name]. {other.stranger, chatty}
+> Nice to meet you, [other.name]! {score = 1}
+> Did I ask? {aggression, score = -2, end = bad}
+Good to see you again, [other.name]! {other.friend, weight = 2}
+> You too! {score = 1}
+Oh. It's you. {other.enemy}
+> Charming. {score = -1}
+>> Just go away. {aggression, end = bad}

@@ -67,6 +67,12 @@
 #   {patience = -1}           leans toward speakers low in it
 #   {nosy, chatty = 0.5}      several at once: leans toward the nosy, and a little toward the chatty
 #   {aggression = -0.5, happy} a little toward the gentle, and toward the happy
+#   {evil = 2}                tags can go past 1: twice as hard a lean (the speaker's own level is always -1 to 1)
+#   {appeal = -1}             how liked it is generally, whoever's speaking: -1 shunned by everyone, 1 liked by all.
+#                             It adds into the same lean as the trait tags, so a tag can override it for some:
+#                             Dying {appeal = -1}  nobody       War and famine {appeal = -1, evil}  nobody but the evil
+#                             Loves count as {appeal = 0.3} and hates {appeal = -0.3} unless they give their own
+#                             (in their {braces}: Taylor Swift {appeal = 0.5}); on an include it's added to everything
 #   {man}  {man = -1}  {woman = 0.5}   sex, as a trait: man is +1 for men, -1 for women (woman the reverse; 0 for cuboid people)
 #   {man > 0}  {woman > 0}  {other.man = 1}  {other.woman > 0}   only men / only women / leaning toward talking to men / only to women
 #   Each trait's value is measured from its neutral (0, or 1 for traits that multiply) toward its max or min, so every
@@ -109,6 +115,11 @@
 #   {other.is = bloody}       only to someone covered in blood — "Is that blood on you?! {other.is = bloody}"
 #   {other.is = drunk}        "> I think you've had enough. {other.is = drunk}"
 #   {other.is != happy}       only when they're not looking happy
+#   {other.friend}            only to a friend (they feel above 20 about them: the person card's Social tab)
+#   {other.enemy}             only to an enemy (below -20)
+#   {other.introduced}        only to someone they've finished a conversation with before
+#   {other.stranger}          only to someone they haven't: "Hi, I'm [me.name]. {other.stranger}"
+#   {seen.friend} {felt.enemy}...  the same about who they saw it happen to, or who did it to them
 #
 # LIKES: how much the replier likes a word picked in the line they're answering, -1 to 1 — 1 if it's one of their loves,
 # -1 one of their hates, else the word's own {tags} read against their traits (0 for a word without tags)
@@ -150,6 +161,15 @@
 # NAMES: [me.name] the speaker, [other.name] who they're talking to, [seen.name] who it happened to, [seen.by] who did
 # it, [felt.by] who did it to the speaker (for revenge, who they got back at). A line whose name can't be had isn't said.
 #   Catch you later, [other.name]. {end}
+# STRANGERS' NAMES (automatic — write [seen.name] as usual): [seen.name], [seen.by] and [felt.by] give the person's name
+# only if the speaker's been introduced to them (finished a conversation together); otherwise "that man" or "that
+# woman", by their sex — never a description ("that man in the red hat"). It takes a capital at a sentence's start
+# like any word:
+#   [seen.by] just punched [seen.name]!   → "That man just punched that woman!" (neither known)
+#                                          → "That man just punched Al Smith!" (knows Al, not the puncher)
+#   Oh God, [seen.name] drowned...        → "Oh God, that woman drowned..."
+# [other.name] is different: to a stranger the whole line isn't said ("Catch you later, that woman" reads wrong), so
+# lines using it only come up between people who've met. [me.name] is always the speaker's own name.
 #   [seen.by] just punched [seen.name]! {seen = punch}
 #   Ow! What was that for, [felt.by]? {felt = punched}
 # LOVES AND HATES BY NAME: [me.loves], [me.hates] one of the speaker's own; [other.loves], [other.hates] one of who
@@ -176,6 +196,18 @@
 #   {end = bad}               ends it badly: no wave, and each may go for the other (more likely the more aggressive)
 #   Alright, bye then! {end, patience}          Get out of my face. {end = bad, aggression}
 #   > Leave me alone. {end = bad, patience = -1}  a reply that ends it
+# SCORE: how the conversation's going. {score = n} on a line adds n when it's said; at the end, each point moves how
+# they feel about each other (the Social tab) by 3, on top of the usual. Closers can go by it:
+#   > Oh, me too! {likes > 0, score = 1}        > You would. {likes = -1, score = -1}
+#   Lovely chatting! {end, talk.score > 1}      Well, that was unpleasant. {end = bad, talk.score < -1}
+#   {talk.score = -1}         leans toward a conversation that's going badly (score -3 counts fully)
+# IN A CIRCLE (people sat on the grass): anyone can reply to anyone. When someone joins, one of those sat there who isn't
+# mid-line greets them with a line from greetings.txt (other. is the newcomer; its replies are theirs), at once if
+# nobody's talking, else next turn; the rest look round at them. Someone whose time's up there gets the next turn to
+# say a closer before getting up: {end} and they wave to the rest; {end = bad} and they walk off, rolling the punch chance
+# against everyone still sat there (going for each they rolled, one after another) while each rolls against them.
+# Punches from a conversation gone bad (either kind) don't send bystanders running or joining in: they just see it
+# ({seen = punch}) and talk about it — "What was that about?". Other punches still scatter people.
 #   Put them on replies to cut a conversation short ("> Mind your own business. {aggression, end = bad}") — an ending
 #   line's own replies are never said. When a conversation's time is up, someone says a line from closers.txt; if
 #   none is said within a few seconds, they just wave.
@@ -186,3 +218,26 @@
 #   >> Thanks!                             replies to the reply above it, and so on
 #   > [dismissal]                          a reply can be an include
 # The talkers take turns round their chat circle. If nothing fits, they babble instead.
+#
+# ------------------------------------------------------------------------------------------------------------------------
+# NOTES (answers to questions that have come up)
+# - New files and folders need no code changes: serve.py lists whatever's there. Serving some other way (another port,
+#   python -m http.server, Live Server) it can't, so run `python3 serve.py --index` after adding files, or new
+#   categories 404.
+# - A line that's only [category] in people/loves.txt or hates.txt is read as a section heading and cuts off every entry
+#   below it — put a placeholder inside words instead ("Their [pets: plural]").
+# - In people/ files { } are traits and [ ] placeholders (whole-line [Headings] aside), as everywhere else now.
+# - A hate's {traits} are what hating it does to someone, so speech reads them backwards: "Slow walkers {speed = 1.7}"
+#   in hates.txt leans the slow toward liking slow walkers, and the fast toward hating them. This is by file name
+#   (hates), so a new people/ list meant as dislikes wouldn't be flipped.
+# - The same words in loves and hates stay two entries, each leaning its own way.
+# - A filled-in love or hate ("Their [pets]" → cats) gives the person only the entry's own {traits}, whatever word
+#   filled it; the word counts as loved (or hated) in speech, and the card and spoken wordings use the same pick.
+# - Tag strengths aren't capped: {evil = 2} leans twice as hard. The speaker's level is always -1 to 1.
+# - {weight: 4} reads as {weight = 4}: a colon works as = in any tag.
+# - {appeal} has no automatic evil flip: a villain only likes something shunned when a tag says so ({appeal = -1, evil}).
+# - {score} only comes from lines you tag — {likes} adds none by itself. A conversation's time running out only prompts
+#   a closer; a low score never ends it badly by itself (only {end = bad} lines do).
+# - [both.clash] in a reply is between the replier and who they're answering: something the replier loves and the
+#   other hates. Hold it with #1 to keep the first speaker's word.
+

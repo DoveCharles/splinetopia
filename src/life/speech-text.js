@@ -2,6 +2,7 @@ import { S } from '../core/shared.js';
 import { TRAITS } from '../core/traits.js';
 import { entryOf } from '../core/entries.js';
 import { setEntryFiller } from './profiles.js';
+import { feelingFor, introduced } from './people/peopleRelations.js';
 import { moralityLevel } from '../ui/morality.js';
 import { roomLayoutOf } from '../buildings/footprints.js';
 import { tessellateClosedPath } from '../core/splines.js';
@@ -18,10 +19,13 @@ const INDEX_URL = TEXT_DIR + 'index.txt'; // every .txt under assets/text/, one 
 // the folders whose files are categories, at any depth, named by file (so a file can move between subfolders freely);
 // people/'s lists (boynames, loves...) come too, their {traits} read as tags (tagsOfTraits), and about.txt files never do
 const CATEGORY_DIRS = ['speech/', 'people/'];
-const ROOTS = ['dialogue', 'thoughts', 'reactions', 'closers', 'fleeing'];
+const ROOTS = ['dialogue', 'thoughts', 'reactions', 'closers', 'fleeing', 'greetings'];
 const MAX_DEPTH = 8;         // how deep includes (and placeholders within placeholders) are followed
 const LEAN = 2;              // how hard a tag leans: × (1 + LEAN × tag × trait), trait measured -1 to +1 from its neutral
 const MIN_LEAN = 0.05;       // the least a leaning can bring an entry's weight down to (× its weight)
+const FRIEND_ABOVE = 20, ENEMY_BELOW = -20; // how someone feels about another (peopleRelations) to count as {other.friend} / {other.enemy}
+const SCORE_FULL = 3;        // a conversation score (see {score}) that counts fully for {talk.score = n}
+const LOVE_APPEAL = 0.3, HATE_APPEAL = -0.3; // appeal of people/'s loves and hates that don't give their own
 const AGREE_FLOOR = 0.2;     // {likes = n}: the least it can make a reply's weight, so the unlikely still happens now and then
 const LOVED_CHANCE = 0.5;    // the chance of picking from the speaker's loves (hates, in a hated call) when any are there
 const TRIES = 6;             // lines tried before giving up, when placeholders can't be filled
@@ -71,7 +75,7 @@ const nameOf = inner => inner.split(':')[0].split('#')[0].trim().toLowerCase();
 
 // A tag list, {weight = 2, evil, patience = -1, world.hour 22-5, world.morality < -0.3, world.weather = rain}.
 function parseTags(text, where) {
-  const tags = { weight: 1, traits: {}, world: [], end: null, thought: false };
+  const tags = { weight: 1, traits: {}, world: [], end: null, thought: false, appeal: 0, score: 0 };
   text.split(',').map(part => part.trim().replace(/:/g, '=')).filter(Boolean).forEach(part => { // (weight: 4 reads as weight = 4)
     let m;
     if ((m = part.match(/^world\.hour\s+(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)$/i))) tags.world.push({ kind: 'hour', from: +m[1], to: +m[2] });
@@ -101,6 +105,11 @@ function parseTags(text, where) {
     else if ((m = part.match(/^likes(?:\s*#\s*(\w+))?\s*(?:(=|<=|>=|<|>)\s*(-?\d+(?:\.\d+)?))?$/i)))
       tags.world.push(!m[2] || m[2] === '=' ? { kind: 'likes', ref: m[1] ?? null, value: m[3] == null ? 1 : +m[3] }
         : { kind: 'likesLimit', ref: m[1] ?? null, op: m[2], value: +m[3] });
+    else if ((m = part.match(/^(other|seen|felt)\.(friend|enemy|introduced|stranger)$/i))) tags.world.push({ kind: 'relation', whose: m[1].toLowerCase(), is: m[2].toLowerCase() });
+    else if ((m = part.match(/^talk\.score\s*(<=|>=|<|>)\s*(-?\d+(?:\.\d+)?)$/i))) tags.world.push({ kind: 'talkScore', op: m[1], value: +m[2] });
+    else if ((m = part.match(/^talk\.score\s*=\s*(-?\d+(?:\.\d+)?)$/i))) tags.world.push({ kind: 'talkLean', value: +m[1] });
+    else if ((m = part.match(/^appeal\s*=\s*(-?\d+(?:\.\d+)?)$/i))) tags.appeal = +m[1];
+    else if ((m = part.match(/^score\s*=\s*(-?\d+(?:\.\d+)?)$/i))) tags.score = +m[1];
     else if (/^thought$/i.test(part)) tags.thought = true;
     else if ((m = part.match(/^end(?:\s*=\s*(good|bad))?$/i))) tags.end = (m[1] ?? 'good').toLowerCase();
     else if ((m = part.match(/^weight\s*=\s*(\d+(?:\.\d+)?)$/i))) tags.weight = +m[1];
@@ -114,15 +123,16 @@ function parseTags(text, where) {
 const LOWERED = ['loves', 'hates'];
 const lowerFirst = text => text.charAt(0).toLowerCase() + text.slice(1);
 // An entry's {traits} (people/'s lists) as tags: each trait's effect on someone starting at its base, measured -1 to 1 as
-// for the speaker's traits (see traitLevel), softened by a square root so a small effect still leans.
-function tagsOfTraits(traits) {
+// for the speaker's traits (see traitLevel), softened by a square root so a small effect still leans. `sign` -1 for hates:
+// hating slow walkers makes someone fast, so it's the slow who'd like them.
+function tagsOfTraits(traits, sign = 1) {
   const tags = {};
   traits.forEach(([trait, value]) => {
     const t = TRAITS[trait];
     if (!t) return;
     const effect = t.combine === 'add' ? t.base + value : t.combine === 'on' ? (value > 0 ? t.max : t.base) : t.base*value;
     const level = traitLevel(trait, Math.max(t.min, Math.min(t.max, effect)));
-    if (level) tags[trait] = Math.max(-1, Math.min(1, (tags[trait] ?? 0) + Math.sign(level)*Math.sqrt(Math.abs(level))));
+    if (level) tags[trait] = Math.max(-1, Math.min(1, (tags[trait] ?? 0) + sign*Math.sign(level)*Math.sqrt(Math.abs(level))));
   });
   return tags;
 }
@@ -139,7 +149,8 @@ function parseFile(name, text, path = `speech/${name}.txt`) {
       const entry = entryOf(line, { file: where });
       if (!entry.text) return;
       const tags = parseTags('', where);
-      tags.traits = tagsOfTraits(entry.traits);
+      tags.traits = tagsOfTraits(entry.traits, name === 'hates' ? -1 : 1); // (a hate's traits are what hating it does)
+      tags.appeal = entry.appeal ?? (name === 'loves' ? LOVE_APPEAL : name === 'hates' ? HATE_APPEAL : 0);
       const node = { tags, replies: [], where, text: entry.said ?? (lowered ? lowerFirst(entry.text) : entry.text), categories: entry.categories };
       file.nodes.push(node);
       return;
@@ -246,6 +257,7 @@ function compileNodes(nodes, depth, path, where) {
     const had = items.get(item.key);
     if (!had) { items.set(item.key, item); return; }
     had.weight = Math.max(had.weight, item.weight);
+    if (Math.abs(item.appeal) > Math.abs(had.appeal)) had.appeal = item.appeal;
     Object.entries(item.traits).forEach(([trait, value]) => {
       const old = had.traits[trait] ?? 0;
       if (old && Math.sign(old) !== Math.sign(value)) warnOnce(`${trait} is tagged both ways on "${item.key}" (${where}); the stronger wins`);
@@ -260,11 +272,14 @@ function compileNodes(nodes, depth, path, where) {
       categoryItems(node.include, depth + 1, path).forEach(inner => add({
         ...inner, weight: inner.weight*node.tags.weight, end: node.tags.end ?? inner.end, thought: node.tags.thought || inner.thought,
         traits: addTraits(inner.traits, node.tags.traits), world: inner.world.concat(node.tags.world),
+        appeal: inner.appeal + node.tags.appeal, score: inner.score || node.tags.score,
       }));
       return;
     }
-    const key = (node.forms ? node.forms.first : node.text).toLowerCase().trim();
+    // (a love and a hate with the same words stay two entries: each leans its own way)
+    const key = (node.forms ? node.forms.first : node.text).toLowerCase().trim() + (node.where?.startsWith('people/') ? `@${node.where}` : '');
     add({ key, forms: node.forms, text: node.text, replies: node.replies, weight: node.tags.weight, end: node.tags.end, thought: node.tags.thought,
+      appeal: node.tags.appeal, score: node.tags.score,
       traits: { ...node.tags.traits }, world: node.tags.world.slice(), where: node.where });
   });
   return [...items.values()];
@@ -342,6 +357,13 @@ const worldAllows = (world, person) => world.every(w => {
   }
   if (w.kind === 'seen') { const seen = seenFresh(person); return !!seen && (!w.what || seen.what === w.what || (w.what === 'death' && DEATHS.includes(seen.what))); }
   if (w.kind === 'felt') { const felt = feltFresh(person); return !!felt && (!w.what || felt.what === w.what); }
+  if (w.kind === 'relation') {
+    const who = w.whose === 'other' ? speakingTo : w.whose === 'seen' ? seenFresh(person)?.who : feltFresh(person)?.by;
+    if (!who || !person) return false;
+    const met = introduced(person, who), feeling = feelingFor(person, who) ?? 0;
+    return w.is === 'introduced' ? met : w.is === 'stranger' ? !met : w.is === 'friend' ? feeling > FRIEND_ABOVE : feeling < ENEMY_BELOW;
+  }
+  if (w.kind === 'talkScore') { const v = person?.group?.score ?? 0; return w.op === '<' ? v < w.value : w.op === '>' ? v > w.value : w.op === '<=' ? v <= w.value : v >= w.value; }
   if (w.kind === 'hour') { const h = S.timeOfDay ?? 12; return w.from <= w.to ? h >= w.from && h < w.to + 1 : h >= w.from || h < w.to + 1; }
   if (w.kind === 'weather') return WEATHERS[w.is]();
   if (w.kind === 'morality') { const m = moralityLevel(); return w.op === '<' ? m < w.value : w.op === '>' ? m > w.value : w.op === '<=' ? m <= w.value : m >= w.value; }
@@ -356,7 +378,7 @@ function liking(word, person) {
   if (!word) return 0;
   if (matches(word, lovesOf(person))) return 1;
   if (matches(word, hatesOf(person))) return -1;
-  const sum = Object.entries(word.traits).reduce((total, [trait, tag]) => total + tag*levelOf(person, trait), 0);
+  const sum = Object.entries(word.traits).reduce((total, [trait, tag]) => total + tag*levelOf(person, trait), word.appeal ?? 0);
   return Math.max(-1, Math.min(1, sum));
 }
 
@@ -370,12 +392,13 @@ const likesAllow = (world, person, vars) => world.every(w => {
 function weightOf(item, person, hated, vars = null) {
   const flip = hated ? -1 : 1;
   let weight = item.weight;
-  Object.entries(item.traits).forEach(([trait, tag]) => {
-    weight *= Math.max(MIN_LEAN, 1 + LEAN*flip*tag*levelOf(person, trait));
-  });
+  // (appeal, and each trait tag read against the speaker, add into one lean: {appeal = -1, evil} is shunned by all but the evil)
+  const lean = Object.entries(item.traits).reduce((sum, [trait, tag]) => sum + tag*levelOf(person, trait), item.appeal ?? 0);
+  weight *= Math.max(MIN_LEAN, 1 + LEAN*flip*lean);
   item.world.forEach(w => {
     if (w.kind === 'moralityLean') weight *= Math.max(MIN_LEAN, 1 + LEAN*flip*w.value*moralityLevel());
     if (w.kind === 'otherLean') weight *= Math.max(MIN_LEAN, 1 + LEAN*flip*w.value*levelOf(speakingTo, w.trait));
+    if (w.kind === 'talkLean') weight *= Math.max(MIN_LEAN, 1 + LEAN*flip*w.value*Math.max(-1, Math.min(1, (person?.group?.score ?? 0)/SCORE_FULL)));
     if (w.kind === 'likes') weight *= Math.max(AGREE_FLOOR, 1 + LEAN*w.value*liking(wordFor(w.ref, vars), person));
   });
   return weight;
@@ -417,7 +440,10 @@ function nameIn(key, person) {
   const [whose, part] = key.split('.');
   const who = whose === 'me' ? person : whose === 'other' ? speakingTo
     : whose === 'seen' ? (part === 'by' ? seenFresh(person)?.by : seenFresh(person)?.who) : feltFresh(person)?.by;
-  return who?.name ?? null;
+  if (!who) return null;
+  if (who === person || introduced(person, who)) return who.name ?? null;
+  // (someone they've not been introduced to: "that man" — but never to their face)
+  return whose === 'other' ? null : who.isMan === true ? 'that man' : who.isMan === false ? 'that woman' : 'that person';
 }
 // One of someone's own loves or hates for [me.loves] etc. (as they say it: p.loves), matched to a speech entry with
 // the same words if there is one (its forms and tags), else as written. Null if they've none.
@@ -501,7 +527,7 @@ function sayFrom(items, person, vars = {}) {
     tried.add(item);
     const held = { ...vars, $last: null };
     const text = item.forms ? item.forms.first : fill(item.text, person, held);
-    if (text) return { text: capitalise(text), replies: item.replies ? compileNodes(item.replies, 0, [], item.where) : [], vars: held, end: item.end, thought: item.thought };
+    if (text) return { text: capitalise(text), replies: item.replies ? compileNodes(item.replies, 0, [], item.where) : [], vars: held, end: item.end, thought: item.thought, score: item.score ?? 0 };
   }
   return null;
 }
@@ -563,6 +589,14 @@ export const pickCloser = (person, other = null) => ready ? (speakingTo = other,
  * @param {string} category
  * @returns {?{text: string, replies: object[], vars: object, end: ?string}}
  */
+/**
+ * A line greeting someone who's just joined (greetings.txt), `other` being them.
+ * @param {object} person
+ * @param {object} other - who's joined
+ * @returns {?{text: string, replies: object[], vars: object, end: ?string}}
+ */
+export const pickGreeting = (person, other) => ready ? (speakingTo = other, sayFrom(categoryItems('greetings'), person)) : null;
+
 export const pickShout = (person, category) => ready ? (speakingTo = null, sayFrom(categoryItems(category), person)) : null;
 
 /**

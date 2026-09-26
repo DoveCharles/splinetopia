@@ -519,3 +519,35 @@ body.ui-loading #loading-screen { opacity:1; visibility:visible; transition:none
    the building's card, and no Smite button in there */
 .entity-card.pc-beside { right:326px; }
 .entity-card.pc-beside .pc-kill.danger { display:none; }
+
+/* person card: wider, with sheet tabs, a status column and the Social tab (src/ui/entity-card.js tabs/effects,
+   src/life/person-card.js) */
+@media (min-width: 761px) { :is(#person-card, #person-card-2) { width:360px; } }
+.pc-tabs { display:flex; }
+.pc-tab { cursor:pointer; font:inherit; }
+.pc-pane { box-sizing:border-box; min-height:120px; }
+.pc-pane[hidden] { display:none; }
+.pc-effects { flex:0 0 22px; display:flex; flex-direction:column; align-items:center; gap:4px; margin-top:18px; }
+.entity-card .pc-effect { font-size:16px; line-height:20px; cursor:default; }
+.pc-pane-social { display:flex; flex-direction:column; gap:8px; padding-top:6px; }
+.pc-rel { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
+.pc-rel-col { min-width:0; }
+.pc-rel-head { font-weight:700; padding:3px 6px; }
+.pc-rel-name { padding:3px 6px; display:flex; justify-content:space-between; gap:6px; white-space:nowrap; }
+.pc-rel-who { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.pc-rel-name:not(.pc-rel-empty) { cursor:pointer; }
+.pc-rel-name:not(.pc-rel-empty):hover .pc-rel-who { text-decoration:underline; }
+.pc-rel-points { flex:0 0 auto; font-variant-numeric:tabular-nums; }
+.pc-rel-name.pc-rel-empty { opacity:0.5; }
+.pc-rel-friends { border-left:var(--trait-bar, 3px) solid var(--trait-loves-bar); background:var(--trait-loves-a); }
+.pc-rel-friends .pc-rel-head { color:var(--trait-loves-label); }
+.pc-rel-friends .pc-rel-name:nth-child(odd) { background:var(--trait-loves-b); }
+.pc-rel-enemies { border-left:var(--trait-bar, 3px) solid var(--trait-hates-bar); background:var(--trait-hates-a); }
+.pc-rel-enemies .pc-rel-head { color:var(--trait-hates-label); }
+.pc-rel-enemies .pc-rel-name:nth-child(odd) { background:var(--trait-hates-b); }
+.pc-said { display:flex; flex-direction:column; }
+.pc-said-head { font-weight:700; padding:3px 0; }
+.pc-said-list { --said-line:18px; height:calc(5*var(--said-line) + 4px); overflow-y:auto; border:1px solid var(--border); padding:2px 4px; user-select:text; }
+.pc-said-line { min-height:var(--said-line); box-sizing:border-box; padding:2px 0; border-bottom:1px dotted var(--border); white-space:normal; }
+.pc-said-line:last-child { border-bottom:none; }
+.pc-said-thought { font-style:italic; opacity:0.8; }

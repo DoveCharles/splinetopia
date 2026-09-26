@@ -1,0 +1,16 @@
+# Said by someone sat in a circle when another joins it (see about.txt): [other.name] and other. tags are the newcomer.
+# Replies are the newcomer's, once they've sat down.
+Hey!
+> Hi!
+Oh, hello. {other.stranger}
+> Hi, I'm [me.name]. {chatty}
+>> Nice to meet you, [other.name]. {score = 1}
+Pull up some grass. {happy}
+Look who it is! {other.friend, weight = 2}
+> Wouldn't miss it. {score = 1}
+[other.name]! Sit down, sit down. {other.friend}
+Oh great, you. {other.enemy}
+> Nice to see you too. {score = -1}
+Room for one more. {patience}
+We were just talking about you. {other.introduced, nosy}
+> All good things, I hope.

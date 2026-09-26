@@ -20,11 +20,14 @@ speech/closers.txt
 speech/dialogue.txt
 speech/farewells.txt
 speech/fleeing.txt
+speech/greetings.txt
 speech/reactions.txt
 speech/thoughts.txt
 speech/talk/complaints.txt
 speech/talk/dismissal.txt
 speech/talk/gossip.txt
+speech/talk/hints.txt
+speech/talk/musings.txt
 speech/talk/oneliners.txt
 speech/talk/places.txt
 speech/talk/smalltalk.txt
@@ -43,7 +46,6 @@ speech/words/danger/weapons.txt
 speech/words/ideas/colours.txt
 speech/words/ideas/concepts.txt
 speech/words/ideas/interests.txt
-speech/words/ideas/musings.txt
 speech/words/living/animals.txt
 speech/words/living/livestock.txt
 speech/words/living/pets.txt

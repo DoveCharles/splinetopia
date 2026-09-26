@@ -34,6 +34,13 @@ I still can't believe [seen.name]'s gone. {seen = death, mood = -1, thought}
 > Someone stop them! {evil = -1}
 Hey! Leave [seen.name] alone! {seen = punch, evil = -1, aggression}
 Ooh, right in the face. {seen = punch, evil}
+What was that about? {seen = punch}
+> No idea. {nosy = -1}
+> They were arguing a minute ago. {nosy}
+Why did [seen.by] punch [seen.name]? {seen = punch, nosy}
+> Must've said something.
+What happened? {seen = punch, weight = 0.5}
+Not again. {seen = punch, patience = -1, thought}
 That car just hit [seen.name]! {seen = knockedbycar}
 > Are they okay?! {evil = -1}
 > Ha! Did you see them fly? {evil}

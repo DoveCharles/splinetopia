@@ -26,6 +26,8 @@ import { closestPointOnSegment } from '../../buildings/footprints.js';
 import { MELODIES } from '../../audio/melodies.js';
 import { favoritePeople, isFavoritePerson } from '../../ui/favorites.js';
 import { registerHealthKind } from '../../core/health.js';
+import { relateFelt, relateSaw, pruneGone } from './peopleRelations.js';
+import { logLine, forgetLinesExcept } from './peopleSaid.js';
 import { CROSS_SPEED_MULT, ROADSAFETY_RADIUS, buildPeopleNav, joinWalkway, maybeCrossRoad, rebuildPeopleNavDebug, reseatPerson, spawnPerson, updateCrossing, walkAlong, walkwayPoint } from './peoplePathing.js';
 import { hidingFromSun, outOfTime, vanishIndoors } from './peopleActivities.js';
 import { PUNCH_CHASE_SPEED, awaited, setAwaited, endActivity, goChat, goLieDown, goRideTrain, goSit, knockOver, holdDown, landFall, meetOnWalkways, pickFights, showInhabitants, showPassengers, stationLinks, updateActivity, updateAttack, updateGroups, updateIndoors, updatePunched, updateTrainRider } from './peopleActivities.js';
@@ -619,6 +621,7 @@ const insideOf = q => q.mode === 'indoors' && q.indoors.stage === 'inside' ? q.i
  * @returns {void}
  */
 export function notice(q, who, what, by = null) {
+  if (by) relateSaw(q, what, by);
   const at = performance.now()/1000, old = q.seen, fresh = old && at - old.at < NOTICED_FOR;
   if (fresh && (SEEN_RANK[old.what] > SEEN_RANK[what] || (old.what === what && old.who === who))) return;
   // (no more than MAX_WITNESSES notice the same thing about the same person while it's fresh — a smell, walking on water)
@@ -651,7 +654,7 @@ export function witness(who, what, by = null) {
  * @param {?Person} [by] - who did it (for revenge, who they got back at)
  * @returns {void}
  */
-export function feel(p, what, by = null) { p.felt = { what, at: performance.now()/1000, by }; }
+export function feel(p, what, by = null) { p.felt = { what, at: performance.now()/1000, by }; if (by) relateFelt(p, what, by); }
 /**
  * How the people around someone take their death: an innocent's leaves them horrified, a bad sort's stops them in
  * their tracks, and a villain's delights them. Called for every death, whoever caused it — the Smite button, or a car
@@ -1024,6 +1027,7 @@ export function updatePeople(t) {
   if (personModel) [personModel, ...personModel.hair].forEach(part => { part.mesh.visible = S.peopleEnabled; });
   peopleNavDebugMesh.visible = S.peopleEnabled && S.showPeopleNavDebug;
   if (!S.peopleEnabled) { showPassengers(); showInhabitants(); updateFlies(0); return; }
+  pruneGone(people, t, forgetLinesExcept); // (relations and recent lines of the gone)
   // (everyone held still where they are while the held-items debug window poses someone: see ui/held-debug.js)
   if (S.peopleFrozen) { S.peopleFrozen(); return; }
   if (!peopleNav || (S.peopleNavDirty && t - peopleNavBuiltAt > 0.25 && !navRebuildOnHold())) {
@@ -1415,6 +1419,8 @@ export function updatePeople(t) {
       // side of a building's walls — in the room with it, or outdoors with it — else gone
       const bubbleSide = isInsideBuilding() ? inRoom(p) : isDrawn(p) && !inRoom(p);
       const babbling = S.babbleBubbles && p.phrase && p.babbleLine?.phrase === p.phrase && p.phrase.said < p.phrase.length ? p.babbleLine : null;
+      const logged = p.saying ?? p.thought; // (for the card's Social tab: see peopleSaid.js)
+      if (logged && logged !== p.loggedLine) { p.loggedLine = logged; logLine(p, logged); }
       const thinking = bubbleSide && !group && !possessed ? thoughtOf(p, dt) : (p.fidgetThought = false, p.thought = null);
       if (bubbleSide && (p.saying || babbling || thinking || hasBubble(p))) speechBubble(p, bubbleAt(p), p.saying ?? babbling ?? thinking);
       // (shocked, a gasp — agape while they stare)
@@ -1508,7 +1514,14 @@ export function updatePeople(t) {
   // (them alone: everyone else is folded away while it draws)
   if (followed >= 0 && personModel && (!isGone(people[followed]) || inRoom(people[followed]))) {
     personModel.only.value = followed;
-    App.drawPersonHeadshot(headshotOf(followed));
+    App.drawPersonHeadshot(headshotOf(followed), followed);
+    personModel.only.value = -1;
+  }
+  // (and a second person card's, now and then: see otherHeadshotIndex in person-card.js)
+  const other = App.otherHeadshotIndex?.() ?? -1;
+  if (other >= 0 && other !== followed && personModel && people[other] && (!isGone(people[other]) || inRoom(people[other]))) {
+    personModel.only.value = other;
+    App.drawPersonHeadshot(headshotOf(other), other);
     personModel.only.value = -1;
   }
   // while controlling someone, their own head and hair are hidden (if S.hideOwnHead)
